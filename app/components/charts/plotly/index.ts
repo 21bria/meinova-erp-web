@@ -1,0 +1,1 @@
+export { default as BasePlotly } from './BasePlotly.vue'
