@@ -2,6 +2,24 @@
 
 ## Active Task
 
+### Dashboard bersama — i18n global (18 Sep 2026)
+
+Label periode, satuan periode, legend chart, placeholder pencarian, dan
+deskripsi widget kini ikut bahasa aktif. Nama bulan dari `Intl`, bukan
+dua daftar tulis tangan. Legend diterjemahkan dari **kode** yang dikirim
+backend (`datasets[].code`), bukan dari teksnya. Periode yang sedang
+dipilih tidak lagi hilang saat bahasa diganti —
+`framework/core/composables/dashboardSession.ts` menyimpannya di luar
+siklus hidup komponen; `:key="locale"` di layout tetap.
+
+Verifikasi: Vitest 342/342 (29 test baru), typecheck 85 error (baseline,
+0 di berkas yang disentuh), UAT browser 26/26 dengan query laporan
+2026-08-01..2026-08-31 identik sebelum dan sesudah ganti bahasa.
+Detail: `docs/claude/dashboard.md` § "i18n dashboard bersama".
+
+Belum: HR Dashboard, Payroll Dashboard, Manpower, Contract Expiry belum
+mengirim `code` pada deret chart-nya.
+
 ### HR Period Summary — dialog rincian audit + dwibahasa (17 Sep 2026)
 
 `framework/core/utils/drilldown.ts` (format saja, tanpa aturan HR),

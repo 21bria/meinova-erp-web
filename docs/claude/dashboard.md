@@ -200,6 +200,31 @@ Dipakai laporan berbaris banyak (HR Period Summary). Widget-nya membawa `page_si
 #### Label kolom tabel ikut bahasa (17 Sep 2026)
 `useDashboard` melokalkan `columns[].label` untuk widget **`table`** dengan kunci `<namespace>.fields.<kolom>` — ruang kunci yang sama dengan label widget. Kolom `list` sengaja tidak disentuh. Katalognya baru diisi untuk HR Period Summary (`app/i18n/locales/{en,id}/reports.ts`), dan `module-fields.spec.ts` mewajibkan kolom hanya untuk namespace di `COLUMN_CATALOGS`. Tabel laporan lain (Contract Expiry, Employee Reporting Audit, Manpower Movement/Summary) masih jatuh ke label Inggris dari schema; menambahkannya = isi katalognya lalu tambahkan namespace-nya ke set itu.
 
+#### i18n dashboard bersama (18 Sep 2026)
+
+Empat sumber teks, dan yang menentukan bukan komponennya melainkan **dari mana teksnya datang**:
+
+| Kategori | Otoritas | Mekanisme |
+|---|---|---|
+| Label periode & satuan | frontend | `Intl` untuk nama bulan (`monthLabel`/`monthAbbr` tidak lagi memegang dua daftar tulis tangan), `common.period.modes.*` untuk satuan, `common.period.quarterLabel` untuk kuartal, `PERIOD_PRESETS[].labelKey` untuk pintasan |
+| Teks komponen (tombol, aria-label, empty state) | frontend | katalog `common.*` lewat `translate()` |
+| Nama deret/irisan chart | **backend mengirim kode**, frontend menerjemahkan | `datasets[].code` / `series[].code` (`apps/framework/charts.py`) → `common.series.<kode>` → `common.status.<kode>` → `label` API |
+| Placeholder pencarian tabel | **backend mengirim kode konteks** | `search_placeholder_key` di schema → `common.placeholder.<kode>`; `search_placeholder` tetap jadi teks cadangan |
+| Deskripsi widget | frontend, per modul | `<namespace>.description.<widget>` di katalog modul, fallback ke teks schema |
+| Nama tenant (department, tipe cuti, nama pegawai) | **tidak pernah diterjemahkan** | tanpa `code`, `seriesLabel()` mengembalikan label apa adanya |
+
+**Kenapa kode, bukan pencocokan teks.** Legend "Hadir"/"Telat" dirakit di Python, jadi ia selalu berbahasa penulisnya. Menukarnya di frontend dengan mencocokkan teks berarti nama department dan nama tipe cuti milik tenant ikut tertukar begitu salah satunya kebetulan sebunyi — dan itu kegagalan yang tidak menimbulkan error apa pun.
+
+**Judul pemilih periode tidak lewat kamus bersama.** `common.fields.period` berisi "Periode Penggajian" (benar untuk Payroll), jadi `periodFilterLabel` di `useDashboard` mencari katalog modul lalu jatuh ke `common.labels.period_filter` — bukan ke `resourceLabel()` yang akan menariknya ke arti Payroll.
+
+**Periode selamat saat bahasa berganti.** `app/layouts/default.vue` memasang `:key="locale"` supaya label yang dihitung sekali di `setup` ikut berganti bahasa; konsekuensinya seluruh state lokal halaman lahir ulang, dan periode laporan kembali ke bulan berjalan. Yang diperbaiki **bukan** `:key`-nya melainkan siklus hidup state-nya: `framework/core/composables/dashboardSession.ts` menyimpan periode + filter per modul di luar komponen, dan `useDashboard` membacanya saat lahir kembali lalu menulisnya tiap kali berubah. Client saja — di SSR fungsinya no-op, karena satu proses server melayani banyak request.
+
+Yang **tidak** ikut disimpan: halaman tabel dan kotak cari (state tampilan, bukan query laporan), bahasa, dan sesi.
+
+Adopter kode deret saat ini baru HR Period Summary. HR Dashboard, Payroll Dashboard, Manpower Summary/Movement, dan Contract Expiry masih mengirim `label` tanpa `code`, jadi legendanya tetap seperti sebelumnya sampai ikut mengadopsi `apps/framework/charts.py`.
+
+Test: `framework/core/utils/__tests__/dashboard-i18n.spec.ts`, `apps/framework/tests_charts.py`, `apps/reports/tests/hr/test_period_summary_charts.py`.
+
 #### Dialog drill-down — kontrak audit (17 Sep 2026)
 Kontrak backend: `backend-erp/docs/claude/reports.md` § "Drill-down: kontrak audit". Frontend **hanya memformat** — `framework/core/utils/drilldown.ts`:
 - `drilldownColumns(detail)` memilih kolom dari `detail_kind` (`late`, `early`, `attendance_day`, `leave`, `overtime`, `roster`). Payload lama tanpa `detail_kind` tetap mendapat empat kolom lama (Tanggal/Keterangan/Referensi/Nilai)

@@ -3,6 +3,7 @@ import fields from './common-fields'
 
 export default {
   actions: {
+    viewAll: 'Lihat Semua',
     clearSearch: 'Kosongkan pencarian',
     selectField: 'Pilih {label}',
     goToCard: 'Ke kartu {label}',
@@ -314,7 +315,45 @@ export default {
   | `today`, `last_7_days`, `this_month`, `last_month`. Yang diterjemahkan
   | labelnya; kodenya dikirim apa adanya sebagai preset.
   */
+  /* Lihat katalog `en` untuk aturannya. */
+  series: {
+    scheduled: 'Terjadwal',
+    present: 'Hadir',
+    late: 'Terlambat',
+    early: 'Pulang Cepat',
+    absent: 'Tidak Hadir',
+    annual: 'Cuti Tahunan',
+    sick: 'Sakit',
+    other_leave: 'Cuti Lainnya',
+    unpaid: 'Cuti Tanpa Upah',
+    field_break: 'Field Break',
+    off_worked: 'Masuk Hari Off',
+    holiday_worked: 'Masuk Hari Libur',
+    ot_regular: 'Lembur Reguler',
+    ot_off: 'Lembur Hari Off',
+    ot_holiday: 'Lembur Hari Libur',
+    ot_total: 'Total Lembur',
+  },
+
   period: {
+    this_week: 'Minggu Ini',
+    last_30_days: '30 Hari Terakhir',
+    this_quarter: 'Kuartal Ini',
+    this_year: 'Tahun Ini',
+    quarterLabel: 'Kuartal {quarter} {year}',
+    goToday: 'Ke hari ini',
+    previous: 'Periode sebelumnya',
+    next: 'Periode berikutnya',
+    previousYear: 'Tahun sebelumnya',
+    nextYear: 'Tahun berikutnya',
+    modes: {
+      day: 'Harian',
+      week: 'Mingguan',
+      month: 'Bulanan',
+      quarter: 'Kuartal',
+      year: 'Tahunan',
+      custom: 'Kustom',
+    },
     today: 'Hari Ini',
     last_7_days: '7 Hari Terakhir',
     this_month: 'Bulan Ini',
@@ -430,6 +469,8 @@ export default {
    * pegawai"), dan itu selalu menang atas yang di sini.
    */
   placeholder: {
+    employee: 'Cari nama atau nomor pegawai...',
+    organization: 'Cari company, location, atau department...',
     search: 'Cari...',
   },
 

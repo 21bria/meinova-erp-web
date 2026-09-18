@@ -10,6 +10,7 @@ import fields from './common-fields'
 
 export default {
   actions: {
+    viewAll: 'View All',
     clearSearch: 'Clear search',
     selectField: 'Select {label}',
     goToCard: 'Go to card {label}',
@@ -325,7 +326,50 @@ export default {
   | `today`, `last_7_days`, `this_month`, `last_month`. Yang diterjemahkan
   | labelnya; kodenya dikirim apa adanya sebagai preset.
   */
+  /*
+   * Nama deret/irisan chart dashboard, dikunci **kode kanonik** yang
+   * dikirim backend (`datasets[].code`, `series[].code`) — bukan
+   * label-nya. Kode yang tidak ada di sini jatuh ke `common.status.<kode>`
+   * lalu ke label API; nama tenant tidak pernah lewat sini.
+   */
+  series: {
+    scheduled: 'Scheduled',
+    present: 'Present',
+    late: 'Late',
+    early: 'Early',
+    absent: 'Absent',
+    annual: 'Annual Leave',
+    sick: 'Sick',
+    other_leave: 'Other Leave',
+    unpaid: 'Unpaid',
+    field_break: 'Field Break',
+    off_worked: 'Off Worked',
+    holiday_worked: 'Holiday Worked',
+    ot_regular: 'Regular OT',
+    ot_off: 'Off OT',
+    ot_holiday: 'Holiday OT',
+    ot_total: 'Total OT',
+  },
+
   period: {
+    this_week: 'This Week',
+    last_30_days: 'Last 30 Days',
+    this_quarter: 'This Quarter',
+    this_year: 'This Year',
+    quarterLabel: 'Quarter {quarter} {year}',
+    goToday: 'Go to today',
+    previous: 'Previous period',
+    next: 'Next period',
+    previousYear: 'Previous year',
+    nextYear: 'Next year',
+    modes: {
+      day: 'Daily',
+      week: 'Weekly',
+      month: 'Monthly',
+      quarter: 'Quarterly',
+      year: 'Yearly',
+      custom: 'Custom',
+    },
     today: 'Today',
     last_7_days: 'Last 7 Days',
     this_month: 'This Month',
@@ -441,6 +485,8 @@ export default {
    * pegawai"), dan itu selalu menang atas yang di sini.
    */
   placeholder: {
+    employee: 'Search employees...',
+    organization: 'Search company, location, or department...',
     search: 'Search...',
   },
 

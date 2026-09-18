@@ -3,6 +3,11 @@ import { translate, resourceLabel } from "../utils/i18n"
 
 import { useApi } from "@/composables/useApi"
 import {
+  dashboardSessionKey,
+  readDashboardSession,
+  writeDashboardSession,
+} from "./dashboardSession"
+import {
   periodForMode,
   periodRangeLabel,
   shiftPeriod,
@@ -53,12 +58,29 @@ export function useDashboard(schema: DashboardSchema) {
       : periodModes.value[0]!
   })()
 
-  const period = ref<DashboardPeriodState>(periodForMode(initialMode))
+  /*
+   * Periode dan filter **bertahan melewati remount**.
+   *
+   * Isi halaman dirakit ulang saat bahasa berganti (`:key="locale"` di
+   * `app/layouts/default.vue`), dan tanpa ini periode yang sedang dibaca
+   * orang kembali ke bulan berjalan — angkanya berubah, bahasanya juga,
+   * dan tidak ada di layar yang memberi tahu bahwa yang pertama ikut
+   * bergeser. Yang disimpan cuma tanggal, mode, dan pilihan filter;
+   * bahasa, sesi, dan data laporan tidak pernah lewat sini.
+   */
+  const sessionKey = dashboardSessionKey(schema)
+  const restored = readDashboardSession(sessionKey)
+
+  const period = ref<DashboardPeriodState>(
+    restored?.period ?? periodForMode(initialMode),
+  )
 
   // Filter bercentang menyimpan `number[]`; `useApi.buildUrl`
   // meng-`String()` nilainya jadi "1,2", dan array kosong jadi string
   // kosong yang dibuang `cleanQuery` — persis arti "tidak disaring".
-  const filters = ref<Record<string, string | number | number[] | null>>({})
+  const filters = ref<Record<string, string | number | number[] | null>>(
+    restored?.filters ?? {},
+  )
 
   const data = ref<DashboardResponse | null>(null)
   const loading = ref(false)
@@ -79,7 +101,11 @@ export function useDashboard(schema: DashboardSchema) {
    */
   const namespace = (schema as { i18n?: { namespace?: string } }).i18n?.namespace ?? ""
 
-  function localize(kind: "fields" | "filters" | "empty", key: string, fallback: string) {
+  function localize(
+    kind: "fields" | "filters" | "empty" | "description",
+    key: string,
+    fallback: string,
+  ) {
     if (!namespace || !key)
       return fallback
 
@@ -115,6 +141,35 @@ export function useDashboard(schema: DashboardSchema) {
          * diberi nilai tanpa syarat, supaya widget yang memang tidak
          * mengenalnya tidak mendadak membawa key baru.
          */
+        /*
+         * Keterangan di bawah judul widget. Ruang kuncinya sendiri
+         * (`description`), bukan `fields`: yang satu nama benda, yang
+         * satu kalimat, dan menaruh keduanya di satu ruang berarti
+         * kalimat panjang ikut terbaca sebagai kandidat judul kolom.
+         */
+        if (localized.description) {
+          localized.description = localize(
+            "description",
+            widget.key,
+            localized.description,
+          )
+        }
+
+        /*
+         * Placeholder kotak cari. Backend menyebut **kode konteksnya**
+         * (`search_placeholder_key: "employee"`), bukan kalimatnya, dan
+         * kalimatnya tinggal di katalog — komponen tabel dashboard tetap
+         * generik, dan laporan yang mencari hal lain cukup menyebut kode
+         * lain. Schema lama yang hanya punya `search_placeholder` tetap
+         * memakai teksnya apa adanya.
+         */
+        if ("search_placeholder_key" in localized && localized.search_placeholder_key) {
+          localized.search_placeholder = translate(
+            `common.placeholder.${localized.search_placeholder_key}`,
+            localized.search_placeholder ?? "Search...",
+          )
+        }
+
         if ("empty_text" in localized && localized.empty_text) {
           localized.empty_text = localize(
             "empty",
@@ -125,6 +180,36 @@ export function useDashboard(schema: DashboardSchema) {
 
         return localized
       })
+  })
+
+  /*
+   * Label filter periode, dilokalkan seperti filter lain.
+   *
+   * Schema backend menyebutnya "Period" (bahasa Inggris, ditulis di
+   * Python), jadi judul popover pemilih periode adalah satu-satunya
+   * bagian layar yang tetap berbahasa Inggris untuk pengguna Indonesia.
+   * Ruang kuncinya sama dengan filter lookup, lalu jatuh ke kamus
+   * bersama `common.fields.period` / `common.labels.period_filter`.
+   */
+  const periodFilterLabel = computed(() => {
+    const filter = periodFilter.value
+
+    if (!filter) return ""
+
+    // **Bukan** lewat kamus bersama: `common.fields.period` berisi
+    // "Periode Penggajian" — benar untuk Payroll, salah untuk pemilih
+    // periode dashboard. Katalog modul dulu, lalu label periode milik
+    // framework, lalu teks schema.
+    const own = namespace
+      ? translate(`${namespace}.filters.${filter.key}`, "")
+      : ""
+
+    if (own) return own
+
+    return translate(
+      "common.labels.period_filter",
+      filter.label || "Period",
+    )
   })
 
   const lookupFilters = computed(() => {
@@ -346,6 +431,11 @@ export function useDashboard(schema: DashboardSchema) {
   watch(
     [period, filters],
     () => {
+      writeDashboardSession(sessionKey, {
+        period: period.value,
+        filters: filters.value,
+      })
+
       void load()
     },
     { deep: true },
@@ -366,6 +456,7 @@ export function useDashboard(schema: DashboardSchema) {
     error,
     widgets,
     periodFilter,
+    periodFilterLabel,
     lookupFilters,
     quickFilters,
     advancedFilters,

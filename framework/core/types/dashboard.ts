@@ -138,6 +138,13 @@ export interface DashboardTableWidget extends DashboardWidgetBase {
   // menyaring baris tabelnya dan tidak menyentuh KPI/chart.
   searchable?: boolean
   search_placeholder?: string
+  /*
+   * Kode konteks pencarian (`employee`, `organization`). Frontend
+   * menerjemahkannya lewat `common.placeholder.<kode>`; `search_placeholder`
+   * tetap dipakai sebagai teks cadangan untuk schema yang belum
+   * menyebutkan kodenya.
+   */
+  search_placeholder_key?: string
 }
 
 export type DashboardWidget =
@@ -252,12 +259,21 @@ export interface DashboardSeriesPoint {
   value: number | null
   percentage?: number
   color?: string
+  /*
+   * Kode kanonik deret (`present`, `late`, `ot_regular`), kalau backend
+   * menyebutkannya. Frontend menerjemahkan **kodenya**, bukan
+   * `label`-nya: nama departemen dan nama tipe cuti milik tenant juga
+   * lewat `label`, dan mencocokkan teks berarti ikut menerjemahkannya.
+   */
+  code?: string
 }
 
 export interface DashboardDataset {
   label: string
   data: (number | null)[]
   color?: string
+  /** Lihat `DashboardSeriesPoint.code`. */
+  code?: string
 }
 
 /**
