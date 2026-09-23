@@ -174,7 +174,7 @@ function reset() {
         :model-value="local[item.key] as string | null | undefined"
         :label="variant === 'panel' ? item.label : undefined"
         :placeholder="item.placeholder ?? item.label"
-        @update:model-value="(v: string) => update(item.key, v)"
+        @update:model-value="(v: string | null) => update(item.key, v)"
       />
 
       <MSwitchField

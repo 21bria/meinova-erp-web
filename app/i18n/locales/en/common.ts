@@ -351,6 +351,17 @@ export default {
     ot_total: 'Total OT',
   },
 
+  /*
+  | Kontrak tanggal-tanpa-jam di seluruh aplikasi: kotaknya `dd.mm.yy`,
+  | API-nya `yyyy-mm-dd`. Dipakai `MDateField`, dan hanya itu — kalau
+  | muncul kalimat kedua tentang format tanggal di layar lain, salah
+  | satunya pasti sudah menyimpang.
+  */
+  dateInput: {
+    hint: 'Format dd.mm.yy — 25.09.26 is 25 September 2026.',
+    invalid: 'Invalid date. Use {format} — for example 25.09.26.',
+  },
+
   period: {
     this_week: 'This Week',
     last_30_days: 'Last 30 Days',

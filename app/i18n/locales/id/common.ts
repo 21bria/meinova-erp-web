@@ -335,6 +335,15 @@ export default {
     ot_total: 'Total Lembur',
   },
 
+  /*
+  | Kontrak tanggal-tanpa-jam di seluruh aplikasi: kotaknya `dd.mm.yy`,
+  | API-nya `yyyy-mm-dd`. Dipakai `MDateField`, dan hanya itu.
+  */
+  dateInput: {
+    hint: 'Format dd.mm.yy — 25.09.26 berarti 25 September 2026.',
+    invalid: 'Tanggal tidak sah. Pakai {format} — misalnya 25.09.26.',
+  },
+
   period: {
     this_week: 'Minggu Ini',
     last_30_days: '30 Hari Terakhir',
