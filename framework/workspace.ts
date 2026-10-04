@@ -1,0 +1,5 @@
+export { default as MWorkspaceHistory } from "./components/workspace/MWorkspaceHistory.vue"
+export { default as MWorkspaceResource } from "./components/workspace/resource/MWorkspaceResource.vue"
+export { default as MWorkspaceResourceDialog } from "./components/workspace/resource/MWorkspaceResourceDialog.vue"
+export { default as MWorkspaceResourceInline } from "./components/workspace/resource/MWorkspaceResourceInline.vue"
+export { default as MWorkspaceResourceTable } from "./components/workspace/resource/MWorkspaceResourceTable.vue"

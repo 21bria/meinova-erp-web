@@ -5,6 +5,11 @@ import { useAsyncData } from "#app"
 import { useApi } from "@/composables/useApi"
 import { useNotify } from "@/composables/useNotify"
 
+import { useResourceAccess } from "./useResourceAccess"
+import { apiErrorMessage } from "../utils/errors"
+import { translate } from "../utils/i18n"
+import { resolveFilterDefaults } from "../utils/dateRange"
+
 import type {
   ApiList,
   CrudConfig,
@@ -17,14 +22,49 @@ export function useCrud<T extends { id?: number; name?: string; code?: string }>
   const { request } = useApi()
   const notify = useNotify()
 
-  const ui = computed<CrudUI>(() => ({
-    create: config.ui?.create ?? true,
-    edit: config.ui?.edit ?? true,
-    delete: config.ui?.delete ?? true,
-    bulk_delete: config.ui?.bulk_delete ?? false,
-    import: config.ui?.import ?? false,
-    export: config.ui?.export ?? false,
-  }))
+  const { load: loadAccess, accessFor } = useResourceAccess()
+
+  loadAccess()
+
+  /**
+   * Flag dari schema **di-AND-kan** dengan izin tulis pengguna.
+   *
+   * Sebelumnya hanya schema yang menentukan, jadi pegawai melihat
+   * tombol Add/Edit di layar yang API-nya pasti menolaknya — dan
+   * penolakannya baru datang setelah seluruh form diisi.
+   *
+   * Diambil dari backend (`/api/framework/permissions/`), bukan
+   * disimpulkan dari daftar izin di `/auth/me`: viewset ber-
+   * `enforce_model_permissions = False` dan saklar
+   * `ENFORCE_MODEL_PERMISSIONS` tidak terlihat dari sana, dan salah
+   * menyimpulkannya menghilangkan tombol yang seharusnya ada.
+   *
+   * Resource yang **tidak dikenal** tidak disaring sama sekali —
+   * filosofi yang sama dengan `isGranted`/`can`: yang tidak diketahui
+   * dianggap boleh, karena API tetap penjaga sebenarnya dan tombol
+   * yang hilang tanpa jejak lebih sulit dilacak daripada tombol yang
+   * ditolak dengan pesan jelas.
+   *
+   * `import` dan `export` sengaja **tidak** ikut disaring: keduanya
+   * membaca, dan membaca memang dibiarkan terbuka oleh
+   * `ModelPermission`. Baris mana yang terbaca tetap urusan
+   * `RoleDataPermission`.
+   */
+  const ui = computed<CrudUI>(() => {
+    const access = accessFor(config.endpoint)
+
+    const may = (action: "create" | "update" | "delete") =>
+      access ? access[action] : true
+
+    return {
+      create: (config.ui?.create ?? true) && may("create"),
+      edit: (config.ui?.edit ?? true) && may("update"),
+      delete: (config.ui?.delete ?? true) && may("delete"),
+      bulk_delete: (config.ui?.bulk_delete ?? false) && may("delete"),
+      import: config.ui?.import ?? false,
+      export: config.ui?.export ?? false,
+    }
+  })
 
   const rows = ref<T[]>([])
   const total = ref(0)
@@ -35,9 +75,28 @@ export function useCrud<T extends { id?: number; name?: string; code?: string }>
   const search = ref("")
   const ordering = ref<string | null>(null)
 
-  const serverFilters = ref<Record<string, any>>({
-    ...(config.defaultQuery ?? {}),
-  })
+  /*
+   * Nilai awal penyaring: bawaan dari skema, lalu `defaultQuery`.
+   *
+   * Urutannya menentukan. Rentang tanggal pada daftar transaksional
+   * datang dari skema (`filter.dateRange`) dan harus sudah ikut di
+   * permintaan **pertama** — daftar presensi yang berangkat tanpa
+   * periode berarti satu `COUNT(*)` atas seluruh tabel setiap kali
+   * halamannya dibuka. `defaultQuery` ditaruh belakangan supaya modul
+   * yang memang mau menimpanya tetap bisa.
+   *
+   * Helper yang sama dipakai toolbar untuk menampilkan periodenya, jadi
+   * yang terlihat di layar dan yang dikirim ke API tidak pernah
+   * diturunkan dua kali dengan dua aturan.
+   */
+  function initialFilters(): Record<string, any> {
+    return {
+      ...resolveFilterDefaults(config.filters?.items),
+      ...(config.defaultQuery ?? {}),
+    }
+  }
+
+  const serverFilters = ref<Record<string, any>>(initialFilters())
 
   const query = computed(() => ({
     page: page.value,
@@ -87,7 +146,25 @@ export function useCrud<T extends { id?: number; name?: string; code?: string }>
     filters?: Record<string, any>
   }) {
     search.value = nextSearch ?? ""
-    serverFilters.value = { ...(filters ?? {}) }
+
+    /*
+     * Bawaan dipasang kembali untuk kunci yang **tidak disebut**
+     * payload-nya.
+     *
+     * Toolbar mengirim isi panel apa adanya, dan panel yang belum
+     * pernah dibuka mengirim `{}`. Tanpa lapisan ini, mengetik di kotak
+     * pencarian lalu menekan Enter akan menghapus rentang tanggalnya —
+     * dan daftarnya berubah diam-diam jadi seluruh sejarah tanpa satu
+     * pun kontrol di layar yang terlihat berubah.
+     *
+     * Yang **disebut** tetap menang, termasuk kalau nilainya kosong:
+     * mengosongkan penyaring adalah perintah, bukan kelalaian.
+     */
+    serverFilters.value = {
+      ...initialFilters(),
+      ...(filters ?? {}),
+    }
+
     page.value = 1
 
     refresh()
@@ -95,9 +172,11 @@ export function useCrud<T extends { id?: number; name?: string; code?: string }>
 
   function onReset() {
     search.value = ""
-    serverFilters.value = {
-      ...(config.defaultQuery ?? {}),
-    }
+
+    // Kembali ke bawaan, bukan ke kosong. Untuk daftar berperiode,
+    // "kosong" berarti seluruh sejarah — dan Reset yang membuka seluruh
+    // sejarah adalah tombol yang paling mudah ditekan tanpa curiga.
+    serverFilters.value = initialFilters()
     page.value = 1
 
     refresh()
@@ -164,13 +243,25 @@ export function useCrud<T extends { id?: number; name?: string; code?: string }>
     await refresh()
   }
 
+  /*
+  | Kalimat backend (`message` envelope), bukan `error.message` milik
+  | `$fetch` — yang isinya `[GET] "http://…": 403 Forbidden`. Penolakan
+  | hak akses adalah satu-satunya pesan yang bisa ditindaklanjuti
+  | pengguna; sebelumnya ia tampil sebagai teks teknis dan tabelnya
+  | berbunyi "No results.", yang terbaca seperti datanya memang kosong.
+  */
+  const errorMessage = computed<string | null>(() =>
+    error.value
+      ? apiErrorMessage(
+          error.value,
+          translate("common.errors.loadList", "Failed to load list."),
+        )
+      : null,
+  )
+
   watchEffect(() => {
-    if (error.value) {
-      notify.error(
-        (error.value as any)?.message
-        || "Failed to load data",
-      )
-    }
+    if (errorMessage.value)
+      notify.error(errorMessage.value)
   })
 
   return {
@@ -186,6 +277,7 @@ export function useCrud<T extends { id?: number; name?: string; code?: string }>
     serverFilters,
     pending,
     error,
+    errorMessage,
     refresh,
 
     onSearch,

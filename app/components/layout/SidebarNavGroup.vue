@@ -25,9 +25,9 @@ const openCollapsible = ref(false)
     >
       <SidebarMenuItem>
         <CollapsibleTrigger as-child>
-          <SidebarMenuButton :tooltip="item.title" :size="size">
+          <SidebarMenuButton :tooltip="navLabel(item)" :size="size">
             <Icon :name="item.icon || ''" mode="svg" />
-            <span>{{ item.title }}</span>
+            <span>{{ navLabel(item) }}</span>
             <span v-if="item.new" class="rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs text-black leading-none no-underline group-hover:no-underline">
               New
             </span>
@@ -42,7 +42,7 @@ const openCollapsible = ref(false)
             >
               <SidebarMenuSubButton as-child :data-active="subItem.link === $route.path">
                 <NuxtLink :to="subItem.link" @click="setOpenMobile(false)">
-                  <span>{{ subItem.title }}</span>
+                  <span>{{ navLabel(subItem) }}</span>
                   <span v-if="subItem.new" class="rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs text-black leading-none no-underline group-hover:no-underline">
                     New
                   </span>

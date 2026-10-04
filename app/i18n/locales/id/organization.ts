@@ -1,0 +1,15 @@
+export default {
+  title: 'Organisasi',
+  company: 'Perusahaan',
+  companyPlural: 'Perusahaan',
+  location: 'Lokasi',
+  locationPlural: 'Lokasi',
+  department: 'Departemen',
+  departmentPlural: 'Departemen',
+  section: 'Seksi',
+  sectionPlural: 'Seksi',
+  position: 'Jabatan',
+  positionPlural: 'Jabatan',
+  costCenter: 'Pusat Biaya',
+  costCenterPlural: 'Pusat Biaya',
+} as const

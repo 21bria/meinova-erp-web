@@ -21,6 +21,13 @@ export type TreeSchema = {
     expand_all?: boolean
     cascade_check?: boolean
     show_search?: boolean
+    /**
+     * Layar baca-saja: tombol Save tidak diterbitkan. Dipakai layar
+     * yang backend-nya memang tidak punya jalur simpan — tombol yang
+     * terbit lalu tidak melakukan apa pun lebih buruk daripada tidak
+     * ada tombolnya.
+     */
+    readonly?: boolean
   }
 }
 

@@ -8,11 +8,11 @@ defineProps<{
 <template>
   <div class="rounded-lg border border-dashed py-20 text-center">
     <h2 class="text-lg font-medium">
-      {{ title ?? "Page not found" }}
+      {{ title ?? $t('common.state.notFoundTitle') }}
     </h2>
 
     <p class="mt-2 text-sm text-muted-foreground">
-      {{ description ?? "The page you are looking for does not exist." }}
+      {{ description ?? $t('common.state.notFoundBody') }}
     </p>
   </div>
 </template>

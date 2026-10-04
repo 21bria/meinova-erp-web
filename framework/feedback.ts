@@ -1,4 +1,6 @@
+export { default as MAvatar } from "./components/feedback/MAvatar.vue"
 export { default as MLoading } from "./components/feedback/MLoading.vue"
 export { default as MEmpty } from "./components/feedback/MEmpty.vue"
 export { default as MError } from "./components/feedback/MError.vue"
+export { default as MImagePreviewDialog } from "./components/feedback/MImagePreviewDialog.vue"
 export { default as MNotFound } from "./components/feedback/MNotFound.vue"

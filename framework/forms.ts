@@ -21,6 +21,7 @@ export { default as MSwitchField } from "./components/forms/MSwitchField.vue"
 export { default as MRadioField } from "./components/forms/MRadioField.vue"
 
 export { default as MDateField } from "./components/forms/MDateField.vue"
+export { default as MDateRangeField } from "./components/forms/MDateRangeField.vue"
 export { default as MDateTimeField } from "./components/forms/MDateTimeField.vue"
 export { default as MTimeField } from "./components/forms/MTimeField.vue"
 
@@ -29,6 +30,7 @@ export { default as MPercentField } from "./components/forms/MPercentField.vue"
 
 export { default as MFileField } from "./components/forms/MFileField.vue"
 export { default as MImageField } from "./components/forms/MImageField.vue"
+export { default as MUploadField } from "./components/forms/MUploadField.vue"
 
 export { default as MRichEditor } from "./components/forms/MRichEditor.vue"
 

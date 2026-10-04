@@ -12,7 +12,7 @@ defineEmits<{
 
 <template>
   <div class="rounded-lg border">
-    <MEmpty v-if="!rows?.length" title="No lookup data" />
+    <MEmpty v-if="!rows?.length" :title="$t('common.state.noLookupData')" />
 
     <button
       v-for="row in rows"

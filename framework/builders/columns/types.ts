@@ -8,13 +8,14 @@ export type CrudAction<T> = {
 export type CrudColumnType =
   | "text"
   | "number"
-  | "currency"
   | "date"
   | "datetime"
+  | "currency"
+  | "percent"
   | "status"
   | "badge"
   | "boolean"
-
+  
 export interface CrudColumn<T = any> {
   key: keyof T & string
   title?: string

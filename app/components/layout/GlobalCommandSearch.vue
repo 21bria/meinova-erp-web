@@ -6,7 +6,7 @@ const keyword = ref('')
 
 const menus = [
   { title: 'Employee Master', href: '/hr/employees', module: 'HR' },
-  { title: 'Payroll Run', href: '/payroll/runs', module: 'Payroll' },
+  { title: 'Payroll Run', href: '/payroll/payroll-runs', module: 'Payroll' },
   { title: 'Purchase Request', href: '/scm/purchase-requests', module: 'SCM' },
   { title: 'Journal Entry', href: '/finance/journals', module: 'Finance' },
   { title: 'Monthly Report', href: '/reports/monthly', module: 'Reports' },

@@ -1,165 +1,179 @@
 <script setup lang="ts">
-import { toTypedSchema } from '@vee-validate/zod'
-import { FieldArray, useForm } from 'vee-validate'
-import { h, ref } from 'vue'
-import { toast } from 'vue-sonner'
-import * as z from 'zod'
-import { cn } from '@/lib/utils'
+/**
+ * Profil pengguna yang sedang login.
+ *
+ * Berkas ini dulu berisi contoh bawaan template: `verifiedEmails`
+ * berisi `m@example.com`, bio "I own a computer.", dua tautan ke
+ * shadcn.com, dan `onSubmit` yang **cuma menampilkan toast berisi JSON
+ * isian**. Tidak ada satu request pun. Jadi tombol Update profile
+ * memang ada, ditekan, dan tidak pernah mengubah apa-apa.
+ *
+ * Sekarang lewat `PATCH /api/accounts/auth/me/` — yang sebelum ini
+ * `RetrieveAPIView`, alias tidak ada cara sama sekali bagi seseorang
+ * untuk membetulkan namanya sendiri.
+ */
+import { apiErrorMessage } from '@framework'
 
-const verifiedEmails = ref(['m@example.com', 'm@google.com', 'm@support.com'])
+const auth = useAuthStore()
+const { request } = useApi()
+const notify = useNotify()
 
-const profileFormSchema = toTypedSchema(z.object({
-  username: z
-    .string()
-    .min(2, {
-      message: 'Username must be at least 2 characters.',
-    })
-    .max(30, {
-      message: 'Username must not be longer than 30 characters.',
-    }),
-  email: z
-    .string({
-      required_error: 'Please select an email to display.',
-    })
-    .email(),
-  bio: z.string().max(160, { message: 'Bio must not be longer than 160 characters.' }).min(4, { message: 'Bio must be at least 2 characters.' }),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url({ message: 'Please enter a valid URL.' }),
-      }),
-    )
-    .optional(),
+const form = reactive({
+  first_name: '',
+  last_name: '',
+  email: '',
+})
+
+const isSaving = ref(false)
+const errors = ref<Record<string, string>>({})
+
+/**
+ * Diisi dari profil yang sudah dimuat, dan diisi **ulang** saat
+ * profilnya datang.
+ *
+ * `/auth/me` lazim selesai setelah halaman dirender; tanpa `watch`,
+ * yang membuka layar ini langsung setelah login mendapat form kosong
+ * dan mengira datanya memang belum ada.
+ */
+watch(
+  () => auth.user,
+  (user) => {
+    if (!user) return
+
+    form.first_name = user.first_name ?? ''
+    form.last_name = user.last_name ?? ''
+    form.email = user.email ?? ''
+  },
+  { immediate: true },
+)
+
+// Yang tidak bisa diubah sendiri, ditampilkan apa adanya. Username
+// dipakai untuk login dan tercetak di jejak audit; role ditentukan
+// admin keamanan. Menyembunyikannya membuat orang mencari-cari di mana
+// mengubahnya; menampilkannya read-only menjawabnya sekali.
+const identity = computed(() => ({
+  username: auth.user?.username ?? '-',
+  roles: (auth.user?.roles ?? [])
+    .map((role: any) => role.name || role.code)
+    .join(', ') || 'Belum ada role',
 }))
 
-const { handleSubmit, resetForm } = useForm({
-  validationSchema: profileFormSchema,
-  initialValues: {
-    bio: 'I own a computer.',
-    urls: [
-      { value: 'https://shadcn.com' },
-      { value: 'http://twitter.com/shadcn' },
-    ],
-  },
-})
+async function onSubmit() {
+  isSaving.value = true
+  errors.value = {}
 
-const onSubmit = handleSubmit((values) => {
-  toast('You submitted the following values:', {
-    description: h('pre', { class: 'mt-2 w-[340px] rounded-md bg-slate-950 p-4' }, h('code', { class: 'text-white' }, JSON.stringify(values, null, 2))),
-  })
-})
+  try {
+    const updated = await request('/api/accounts/auth/me/', {
+      method: 'PATCH',
+      body: { ...form },
+    })
+
+    // Respons memakai bentuk **baca** (lengkap dengan role dan izin),
+    // jadi bisa dipasang apa adanya. Menyimpan bentuk tulis di sini
+    // akan menghapus role dari state dan sidebar langsung kehilangan
+    // menunya tanpa satu pun error.
+    auth.user = updated
+
+    notify.success('Profil tersimpan.')
+  }
+  catch (err: any) {
+    const payload = err?.data?.errors
+
+    if (payload && typeof payload === 'object') {
+      errors.value = Object.fromEntries(
+        Object.entries(payload).map(([key, value]) => [
+          key,
+          Array.isArray(value) ? String(value[0]) : String(value),
+        ]),
+      )
+    }
+
+    notify.error(apiErrorMessage(err, 'Gagal menyimpan profil'))
+  }
+  finally {
+    isSaving.value = false
+  }
+}
 </script>
 
 <template>
   <div>
     <h3 class="text-lg font-medium">
-      Profile
+      Profil
     </h3>
+
     <p class="text-sm text-muted-foreground">
-      This is how others will see you on the site.
+      Nama dan email yang tampil di sidebar, dokumen, dan jejak persetujuan.
     </p>
-  </div>
-  <Separator />
-  <form class="space-y-8" @submit="onSubmit">
-    <FormField v-slot="{ componentField }" name="username">
-      <FormItem>
-        <FormLabel>Username</FormLabel>
-        <FormControl>
-          <Input type="text" placeholder="shadcn" v-bind="componentField" />
-        </FormControl>
-        <FormDescription>
-          This is your public display name. It can be your real name or a pseudonym. You can only change this once every 30 days.
-        </FormDescription>
-        <FormMessage />
-      </FormItem>
-    </FormField>
 
-    <FormField v-slot="{ componentField }" name="email">
-      <FormItem>
-        <FormLabel>Email</FormLabel>
+    <Separator class="my-4" />
 
-        <Select v-bind="componentField">
-          <FormControl>
-            <SelectTrigger>
-              <SelectValue placeholder="Select an email" />
-            </SelectTrigger>
-          </FormControl>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem v-for="email in verifiedEmails" :key="email" :value="email">
-                {{ email }}
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-        <FormDescription>
-          You can manage verified email addresses in your email settings.
-        </FormDescription>
-        <FormMessage />
-      </FormItem>
-    </FormField>
-
-    <FormField v-slot="{ componentField }" name="bio">
-      <FormItem>
-        <FormLabel>Bio</FormLabel>
-        <FormControl>
-          <Textarea placeholder="Tell us a little bit about yourself" v-bind="componentField" />
-        </FormControl>
-        <FormDescription>
-          You can <span>@mention</span> other users and organizations to link to them.
-        </FormDescription>
-        <FormMessage />
-      </FormItem>
-    </FormField>
-
-    <div>
-      <FieldArray v-slot="{ fields, push, remove }" name="urls">
-        <div v-for="(field, index) in fields" :key="`urls-${field.key}`">
-          <FormField v-slot="{ componentField }" :name="`urls[${index}].value`">
-            <FormItem>
-              <FormLabel :class="cn(index !== 0 && 'sr-only')">
-                URLs
-              </FormLabel>
-              <FormDescription :class="cn(index !== 0 && 'sr-only')">
-                Add links to your website, blog, or social media profiles.
-              </FormDescription>
-              <div class="relative flex items-center">
-                <FormControl>
-                  <Input type="url" v-bind="componentField" />
-                </FormControl>
-                <button type="button" class="absolute end-0 py-2 pe-3 text-muted-foreground" @click="remove(index)">
-                  <Icon name="i-radix-icons-cross-1" class="w-3" />
-                </button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          </FormField>
+    <form class="space-y-6" @submit.prevent="onSubmit">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="space-y-2">
+          <Label for="first-name">Nama Depan</Label>
+          <Input id="first-name" v-model="form.first_name" autocomplete="given-name" />
+          <p v-if="errors.first_name" class="text-xs text-destructive">
+            {{ errors.first_name }}
+          </p>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          class="mt-2 w-20 text-xs"
-          @click="push({ value: '' })"
-        >
-          Add URL
+        <div class="space-y-2">
+          <Label for="last-name">Nama Belakang</Label>
+          <Input id="last-name" v-model="form.last_name" autocomplete="family-name" />
+          <p v-if="errors.last_name" class="text-xs text-destructive">
+            {{ errors.last_name }}
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <Label for="email">Email</Label>
+        <Input id="email" v-model="form.email" type="email" autocomplete="email" />
+        <p v-if="errors.email" class="text-xs text-destructive">
+          {{ errors.email }}
+        </p>
+        <p v-else class="text-xs text-muted-foreground">
+          Dipakai untuk pemberitahuan dan pemulihan akun.
+        </p>
+      </div>
+
+      <Separator />
+
+      <!--
+        Read-only, bukan disembunyikan: "kenapa role saya begini" dan
+        "username saya apa" adalah dua pertanyaan yang selalu muncul di
+        layar profil, dan jawabannya ada di sini.
+      -->
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="space-y-1">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Username
+          </p>
+          <p class="text-sm">
+            {{ identity.username }}
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Role
+          </p>
+          <p class="text-sm">
+            {{ identity.roles }}
+          </p>
+        </div>
+      </div>
+
+      <p class="text-xs text-muted-foreground">
+        Username dan role diatur administrator keamanan.
+      </p>
+
+      <div class="flex items-center gap-2">
+        <Button type="submit" :disabled="isSaving">
+          {{ isSaving ? 'Menyimpan…' : 'Simpan Perubahan' }}
         </Button>
-      </FieldArray>
-    </div>
-
-    <div class="flex justify-start gap-2">
-      <Button type="submit">
-        Update profile
-      </Button>
-
-      <Button
-        type="button"
-        variant="outline"
-        @click="resetForm"
-      >
-        Reset form
-      </Button>
-    </div>
-  </form>
+      </div>
+    </form>
+  </div>
 </template>

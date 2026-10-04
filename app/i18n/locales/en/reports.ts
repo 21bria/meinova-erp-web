@@ -20,6 +20,7 @@ export default {
         scheduled: 'Scheduled',
         present: 'Present',
         absent: 'Absent',
+        business_trip: 'Business Trip',
         annual: 'Annual Leave',
         sick: 'Sick',
         other_leave: 'Other Leave',

@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<{
 })
 
 const chart = ref<InstanceType<typeof ApexChart> | null>(null)
-const { isDark, textColor, defaultColors } = useApexTheme()
+const { isDark, textColor, surfaceColor, defaultColors } = useApexTheme()
 
 const baseOptions = computed<ApexOptions>(() => ({
   chart: {
@@ -55,6 +55,12 @@ const baseOptions = computed<ApexOptions>(() => ({
     enabled: true,
     formatter: (value: number) => `${value.toFixed(1)}%`,
   },
+  // Celah antar-irisan berwarna kartu, bukan putih. Lihat
+  // `surfaceColor` di `theme.ts` untuk alasannya.
+  stroke: {
+    width: 2,
+    colors: [surfaceColor.value],
+  },
   legend: {
     position: 'bottom',
     horizontalAlign: 'center',
@@ -70,6 +76,17 @@ const baseOptions = computed<ApexOptions>(() => ({
         size: '68%',
         labels: {
           show: true,
+          /*
+           * Teks di tengah donut memakai **tinta teks**, bukan warna
+           * irisannya. Bawaan Apex mewarnai nama irisan yang sedang
+           * disorot dengan warna deretnya dan angkanya dengan putih
+           * tetapnya sendiri (#f6f7f8) — dua tinta yang tidak dikenal
+           * sistem warna ini, dan yang kedua tidak pernah ikut berganti
+           * mode. Identitas irisan sudah dibawa cincinnya, legendanya,
+           * dan tooltipnya; teksnya cukup terbaca.
+           */
+          name: { color: textColor.value },
+          value: { color: textColor.value },
           total: {
             show: true,
             label: 'Total',

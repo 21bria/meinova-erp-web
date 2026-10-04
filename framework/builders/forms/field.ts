@@ -48,6 +48,19 @@ export const field = {
     }
   },
 
+  url(
+    key: string,
+    label = "URL",
+    extra: FieldExtra = {},
+  ): FormField {
+    return {
+      key,
+      type: "url",
+      label,
+      ...extra,
+    }
+  },
+
   textarea(
     key: string,
     label?: string,
@@ -56,6 +69,19 @@ export const field = {
     return {
       key,
       type: "textarea",
+      label,
+      ...extra,
+    }
+  },
+
+  richtext(
+    key: string,
+    label?: string,
+    extra: FieldExtra = {},
+  ): FormField {
+    return {
+      key,
+      type: "richtext",
       label,
       ...extra,
     }
@@ -77,18 +103,35 @@ export const field = {
   select(
     key: string,
     label: string,
-    options: FormFieldOption[],
+    optionsOrExtra:
+      | FormFieldOption[]
+      | FieldExtra = {},
     extra: FieldExtra = {},
   ): FormField {
+    const isOptionsArray =
+      Array.isArray(optionsOrExtra)
+
+    const resolvedOptions =
+      isOptionsArray
+        ? optionsOrExtra
+        : optionsOrExtra.options ?? []
+
+    const resolvedExtra =
+      isOptionsArray
+        ? extra
+        : optionsOrExtra
+
     return {
       key,
       type: "select",
       label,
-      options,
-      ...extra,
+      ...resolvedExtra,
+      options: resolvedOptions,
+      multiple:
+        resolvedExtra.multiple
+        ?? false,
     }
   },
-
   lookup(
     key: string,
     label: string,
@@ -152,6 +195,130 @@ export const field = {
       key,
       type: "datetime",
       label,
+      ...extra,
+    }
+  },
+
+  time(
+    key: string,
+    label: string,
+    extra: FieldExtra = {},
+  ): FormField {
+    return {
+      key,
+      type: "time",
+      label,
+      ...extra,
+    }
+  },
+
+  file(
+    key: string,
+    label = "Attachment",
+    extra: FieldExtra = {},
+  ): FormField {
+    const uploadEndpoint =
+      extra.uploadEndpoint
+      ?? extra.upload_endpoint
+      ?? "/api/uploads/"
+
+    const uploadMode =
+      extra.uploadMode
+      ?? extra.upload_mode
+      ?? "separate"
+
+    const valueMode =
+      extra.valueMode
+      ?? extra.value_mode
+      ?? "id"
+
+    const detailField =
+      extra.detailField
+      ?? extra.detail_field
+      ?? `${key}_detail`
+
+    return {
+      key,
+      type: "file",
+      label,
+
+      widget:
+        extra.widget
+        ?? "upload",
+
+      multiple:
+        extra.multiple
+        ?? false,
+
+      category:
+        extra.category
+        ?? "attachment",
+
+      public:
+        extra.public
+        ?? false,
+
+      preview:
+        extra.preview
+        ?? true,
+
+      download:
+        extra.download
+        ?? true,
+
+      replace:
+        extra.replace
+        ?? true,
+
+      delete:
+        extra.delete
+        ?? true,
+
+      uploadEndpoint,
+      uploadMode,
+      valueMode,
+      detailField,
+
+      ...extra,
+    }
+  },
+
+  image(
+    key: string,
+    label = "Image",
+    extra: FieldExtra = {},
+  ): FormField {
+    return {
+      ...field.file(
+        key,
+        label,
+        {
+          accept: "image/*",
+          category: "image",
+          widget: "image-upload",
+          ...extra,
+        },
+      ),
+      type: "file",
+    }
+  },
+
+  /**
+   * Peringatan konfigurasi dari backend (`widget: "warnings"`), mis.
+   * `travel_document_warnings` Employee Group. Hanya tampilan — tidak
+   * divalidasi, tidak menahan simpan. Selalu selebar form.
+   */
+  warnings(
+    key: string,
+    label?: string,
+    extra: FieldExtra = {},
+  ): FormField {
+    return {
+      key,
+      type: "warnings",
+      label,
+      layout: "full",
+      readonly: true,
       ...extra,
     }
   },

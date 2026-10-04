@@ -14,6 +14,9 @@ export default {
     clearSearch: 'Clear search',
     selectField: 'Select {label}',
     goToCard: 'Go to card {label}',
+    goToCardGroup: 'Go to metrics group {index}',
+    previousMetrics: 'Previous metrics',
+    nextMetrics: 'Next metrics',
     save: 'Save',
     saving: 'Saving...',
     cancel: 'Cancel',
@@ -63,6 +66,7 @@ export default {
     posted: 'Posted',
     cancelled: 'Cancelled',
     completed: 'Completed',
+    on_trip: 'On Trip',
     in_progress: 'In Progress',
     failed: 'Failed',
     returned: 'Returned',
@@ -338,6 +342,7 @@ export default {
     late: 'Late',
     early: 'Early',
     absent: 'Absent',
+    business_trip: 'Business Trip',
     annual: 'Annual Leave',
     sick: 'Sick',
     other_leave: 'Other Leave',
@@ -391,6 +396,7 @@ export default {
 
   labels: {
     employees: 'Employees',
+    keyMetrics: 'Key metrics',
     account: 'Account',
     period_filter: 'Period',
     history: 'History',
@@ -516,6 +522,14 @@ export default {
    * ditaruh di sini hanya arti yang paling umum. Layar yang memakainya
    * dengan arti lain menulis sendiri di katalog modulnya.
    */
+  /*
+   * Tab workspace yang baru bisa dibuka sesudah record tersimpan.
+   * Modul boleh menulis kalimat sendiri di `<namespace>.saveFirst.<tab>`.
+   */
+  workspace: {
+    saveFirst: 'Save this record first to use this section.',
+  },
+
   tabs: {
     general: 'General',
     organization: 'Organization',

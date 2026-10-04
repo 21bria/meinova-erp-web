@@ -7,6 +7,7 @@ export function createFilters(
     search: {
       enabled: config.search?.enabled ?? true,
       placeholder: config.search?.placeholder ?? "Search...",
+      placeholderKey: config.search?.placeholderKey,
     },
 
     advanced: config.advanced ?? false,

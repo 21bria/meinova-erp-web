@@ -4,6 +4,8 @@ import type { ColumnDef } from "@tanstack/vue-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { MColumnHeader, MCrudActions } from "@framework"
 
+import { statusLabel, translate } from "./i18n"
+
 type CheckState = boolean | "indeterminate"
 
 type BuilderActions<T> = {
@@ -35,12 +37,23 @@ export function statusColumn<T>(
 ): ColumnDef<T> {
   return {
     accessorKey: key,
-    header: ({ column }) => h(MColumnHeader, { column, title: "Status" }),
+    /*
+     * `header` dan `cell` dipanggil ulang tiap render, jadi keduanya
+     * ikut berganti bahasa tanpa kolomnya perlu dirakit ulang.
+     *
+     * Yang **tidak** berubah: nilai yang dibaca tetap boolean milik
+     * baris itu, dan tidak ada satu pun perbandingan yang memakai teks
+     * hasil terjemahan.
+     */
+    header: ({ column }) =>
+      h(MColumnHeader, { column, title: translate("common.labels.status", "Status") }),
     cell: ({ row }) =>
       h(
         "div",
         { class: "text-muted-foreground" },
-        row.original[key] ? "Active" : "Inactive",
+        row.original[key]
+          ? statusLabel("active", "Active")
+          : statusLabel("inactive", "Inactive"),
       ),
     enableSorting: true,
   }
@@ -75,7 +88,11 @@ export function selectColumn<T>(disabled = false): ColumnDef<T> {
 export function actionsColumn<T>(actions: BuilderActions<T>): ColumnDef<T> {
   return {
     id: "actions",
-    header: () => h("div", { class: "text-left" }, "Actions"),
+    header: () => h(
+      "div",
+      { class: "text-left" },
+      translate("common.actions.actions", "Actions"),
+    ),
     cell: ({ row }) =>
       h("div", { class: "flex justify-end" }, [
         h(MCrudActions, {

@@ -23,6 +23,37 @@ export function useApi() {
   }
 
 
+  // GET/HEAD tidak boleh membawa body: `fetch` menolaknya mentah-mentah
+  // dengan "Request with GET/HEAD method cannot have body", dan objek
+  // kosong `{}` tetap terhitung body. Pemanggil schema-driven
+  // (`MRecordActions`, `useCrudCollectionActions`) selalu merakit body
+  // karena method-nya datang dari schema backend, jadi penjagaannya
+  // ditaruh di sini — satu tempat — bukan di tiap pemanggil.
+  //
+  // Isinya dilipat jadi query, bukan dibuang: aksi GET yang punya isian
+  // memang bermaksud mengirim filter, dan query adalah satu-satunya
+  // jalan yang dipunyai GET.
+  const BODYLESS = new Set(["GET", "HEAD"])
+
+  const isPlainObject = (value: any) =>
+    typeof value === "object"
+    && value !== null
+    && !Array.isArray(value)
+    && Object.prototype.toString.call(value) === "[object Object]"
+
+  const splitPayload = (method: string, opts: RequestOpts) => {
+    if (!BODYLESS.has(method.toUpperCase()))
+      return { query: opts.query, body: opts.body }
+
+    return {
+      query: {
+        ...(opts.query ?? {}),
+        ...(isPlainObject(opts.body) ? opts.body : {}),
+      },
+      body: undefined,
+    }
+  }
+
   const buildUrl = (path: string, query?: Record<string, any>) => {
     const qs = new URLSearchParams(
       Object.entries(cleanQuery(query)).reduce((acc, [key, value]) => {
@@ -53,11 +84,14 @@ export function useApi() {
       auth.loadFromStorage()
     }
 
+    const method = opts.method ?? "GET"
+    const payload = splitPayload(method, opts)
+
     const doFetch = (accessToken?: string) => {
       return $fetch<T>(buildUrl(path), {
-        method: opts.method ?? "GET",
-        query: cleanQuery(opts.query),
-        body: opts.body,
+        method,
+        query: cleanQuery(payload.query),
+        body: payload.body,
         responseType: opts.responseType ?? "json",
         headers: {
           ...(opts.headers ?? {}),
@@ -102,10 +136,13 @@ export function useApi() {
       auth.loadFromStorage()
     }
 
+    const method = opts.method ?? "GET"
+    const payload = splitPayload(method, opts)
+
     const doFetch = (accessToken?: string) => {
-      return fetch(buildUrl(path, opts.query), {
-        method: opts.method ?? "GET",
-        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      return fetch(buildUrl(path, payload.query), {
+        method,
+        body: payload.body ? JSON.stringify(payload.body) : undefined,
         headers: {
           "Content-Type": "application/json",
           ...(opts.headers ?? {}),

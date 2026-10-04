@@ -14,7 +14,7 @@ const year = new Date().getFullYear()
       <!-- Mobile logo only -->
       <NuxtLink to="/" class="flex items-center justify-center lg:hidden">
         <div class="flex h-20 w-24 items-center justify-center">
-          <img src="/meinova.png" alt="Meinova" class="size-24 object-contain">
+          <img src="/meinova_white.png" alt="Meinova" class="size-18 object-contain">
         </div>
       </NuxtLink>
 

@@ -4,6 +4,13 @@ import { Toaster } from '@/components/ui/sonner'
 import 'vue-sonner/style.css'
 
 const colorMode = useColorMode()
+
+/*
+ * Bahasa aktif. Dipakai untuk atribut `lang` pada <html> — dan hanya di
+ * sini, supaya tidak ada dua `useHead` yang menulis atribut yang sama
+ * lalu salah satunya diam-diam kalah.
+ */
+const { intl: intlLocaleTag } = useLocale()
 const color = computed(() => colorMode.value === 'dark' ? '#09090b' : '#ffffff')
 const { theme } = useAppSettings()
 
@@ -17,7 +24,10 @@ useHead({
     { rel: 'icon', href: '/favicon.ico' },
   ],
   htmlAttrs: {
-    lang: 'en',
+    // Dulu ditulis mati `'en'`. Pembaca layar dan pemeriksa ejaan
+    // membacanya, jadi halaman berbahasa Indonesia yang mengaku `en`
+    // dilafalkan dengan aksen yang salah.
+    lang: intlLocaleTag,
   },
   bodyAttrs: {
     class: computed(() => `color-${theme.value?.color || 'default'} theme-${theme.value?.type || 'default'}`),

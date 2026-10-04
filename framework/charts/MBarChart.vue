@@ -10,13 +10,21 @@ withDefaults(defineProps<{
   title?: string
   height?: string | number
 
+  // Formatter sumbu **nilai**. Namanya `yFormatter` karena itu yang
+  // dipakai seluruh pemanggil dashboard; `BaseBar` yang memutuskan
+  // sumbu mana yang menerimanya, mengikuti orientasi batangnya.
   yFormatter?: (value: number) => string
   tooltipFormatter?: (value: number) => string
+
+  horizontal?: boolean
+  stacked?: boolean
 }>(), {
   categories: () => [],
   colors: () => [],
   title: "",
   height: 320,
+  horizontal: true,
+  stacked: false,
 })
 </script>
 
@@ -27,7 +35,9 @@ withDefaults(defineProps<{
     :colors="colors"
     :title="title"
     :height="height"
-    :y-formatter="yFormatter"
+    :x-formatter="yFormatter"
     :tooltip-formatter="tooltipFormatter"
+    :horizontal="horizontal"
+    :stacked="stacked"
   />
 </template>

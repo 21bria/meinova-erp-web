@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 
+import { useResourceAccess } from '@framework'
+
 type LoginResponse = {
   access: string
   refresh: string
@@ -101,6 +103,25 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       this.meLoaded = false
       this.mePromise = null
+
+      // Menu yang boleh dilihat disimpan di `useState`, yang bertahan
+      // lintas navigasi di sisi klien. Tanpa dikosongkan di sini,
+      // pengguna berikutnya yang login di tab yang sama mewarisi
+      // pembatasan menu milik pengguna sebelumnya.
+      if (import.meta.client) {
+        useMenuAccess().reset()
+
+        // Alasan yang sama: isi bel juga di `useState`, jadi tanpa ini
+        // pengguna berikutnya melihat notifikasi milik pengguna
+        // sebelumnya sampai belnya dimuat ulang.
+        useNotifications().reset()
+
+        // Dan izin tulis per resource — yang menentukan tombol Add/Edit
+        // muncul atau tidak. Tanpa ini pegawai yang login setelah HR
+        // manager di tab yang sama mendapat tombol yang API-nya pasti
+        // menolaknya.
+        useResourceAccess().reset()
+      }
 
       if (import.meta.client) {
         localStorage.removeItem('user')

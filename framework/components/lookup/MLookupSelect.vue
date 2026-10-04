@@ -1,27 +1,152 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue"
+import { translate } from "../../core/utils/i18n"
 import { useApi } from "@/composables/useApi"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-type LookupItem = { value: number; label: string }
-type ApiList<T> = { count: number; next: string | null; results: T[] }
-
-const props = defineProps<{
+type LookupItem = {
+  value: number
   label: string
-  endpoint: string
-  depends?: Record<string, any>
-  disabled?: boolean
-  variant?: "compact" | "field"
-  selectedLabel?: string | null
-  valueKey?: string
-  labelKey?: string
-  searchParam?: string
-  allowNull?: boolean
-  nullLabel?: string
+  raw: Record<string, any>
+}
+// type ApiList<T> = { count: number; next: string | null; results: T[] }
+
+type ApiList<T> = {
+  count?: number
+  next?: string | null
+  results?: T[]
+
+  success?: boolean
+  data?: T[]
+  meta?: {
+    count?: number
+    next?: string | null
+    previous?: string | null
+    page?: number
+    page_size?: number
+    total_pages?: number
+  }
+}
+
+function normalizeListResponse<T>(
+  response: ApiList<T>,
+) {
+  return {
+    results:
+      response?.results
+      ?? response?.data
+      ?? [],
+
+    next:
+      response?.next
+      ?? response?.meta?.next
+      ?? null,
+
+    count:
+      response?.count
+      ?? response?.meta?.count
+      ?? 0,
+  }
+}
+
+const props = withDefaults(
+  defineProps<{
+    modelValue?: number | number[] | null
+    label: string
+    /*
+     * Daftar centang, bukan pilih-satu. `modelValue` jadi `number[]`.
+     *
+     * Ditambahkan di sini alih-alih jadi komponen tersendiri: pencarian,
+     * paginasi, cache label, dan resolusi `depends` sudah lengkap di
+     * komponen ini, dan salinan kedua yang harus tetap sama adalah
+     * persis cara dua dropdown berperilaku beda tanpa ada yang
+     * menyadarinya.
+     */
+    multiple?: boolean
+    endpoint: string
+    depends?: Record<string, any>
+    disabled?: boolean
+    variant?: "compact" | "field"
+    selectedLabel?: string | null
+    valueKey?: string
+    labelKey?: string
+    searchParam?: string
+    allowNull?: boolean
+    nullLabel?: string
+    /*
+     * Teks saat belum ada yang dipilih.
+     *
+     * Sempat dioper `MLookupField` ke sini padahal **tidak pernah ada
+     * prop-nya** — jatuh jadi atribut mati, sama seperti
+     * `:lookup-params` pada kasus filter berantai. Vue tidak
+     * mengeluhkan prop yang tidak dikenal, jadi keduanya gagal tanpa
+     * suara.
+     */
+    placeholder?: string
+  }>(),
+  {
+    modelValue: null,
+    multiple: false,
+    depends: () => ({}),
+    disabled: false,
+    variant: "compact",
+    selectedLabel: null,
+    valueKey: "id",
+    labelKey: "name",
+    searchParam: "search",
+    allowNull: true,
+  },
+)
+
+const emit = defineEmits<{
+  "update:modelValue": [
+    value: number | number[] | null,
+  ]
+
+  select: [
+    item: Record<string, any> | null,
+  ]
 }>()
 
-const model = defineModel<number | null>({ default: null })
+const model = computed<number | null>({
+  get() {
+    if (props.multiple)
+      return null
+
+    return (props.modelValue as number | null) ?? null
+  },
+
+  set(value) {
+    emit(
+      "update:modelValue",
+      value,
+    )
+  },
+})
+
+// Daftar id terpilih pada mode centang. Selalu array, walau
+// pemanggilnya mengirim satu angka — nilai awal dari URL atau state
+// lama gampang berbentuk skalar, dan `.includes` pada angka melempar.
+const selectedIds = computed<number[]>(() => {
+  if (!props.multiple)
+    return []
+
+  const raw = props.modelValue
+
+  if (Array.isArray(raw))
+    return raw.map(Number).filter(value => !Number.isNaN(value))
+
+  if (raw == null)
+    return []
+
+  return [Number(raw)].filter(value => !Number.isNaN(value))
+})
+
+function isChecked(value: number): boolean {
+  return selectedIds.value.includes(Number(value))
+}
+
 const { request } = useApi()
 
 const open = ref(false)
@@ -42,9 +167,30 @@ const valueKey = computed(() => props.valueKey ?? "id")
 const labelKey = computed(() => props.labelKey ?? "name")
 const searchParam = computed(() => props.searchParam ?? "search")
 const allowNull = computed(() => props.allowNull ?? true)
-const nullLabel = computed(() =>
-  props.nullLabel ?? (isField.value ? `Select ${props.label}` : "All")
-)
+/*
+ * Urutannya: `nullLabel` eksplisit → `placeholder` → turunan dari label.
+ *
+ * Dipakai `??` sebelumnya, dan itu salah untuk dua prop yang bawaannya
+ * string kosong: `""` bukan nullish, jadi ia menang atas turunannya dan
+ * tombolnya jadi kosong melompong. Diperiksa truthy, bukan nullish.
+ *
+ * `.trim()` bukan kosmetik. Filter di toolbar sengaja tidak mengoper
+ * `label` (kalau dioper, judulnya ikut tercetak di atas dropdown), jadi
+ * turunannya jadi `"Select "` — dan yang terbaca pengguna cuma
+ * **"Select"** telanjang, tiga kali berjejer di satu baris tanpa ada
+ * yang memberi tahu mana yang mana.
+ */
+const nullLabel = computed(() => {
+  if (props.nullLabel)
+    return props.nullLabel
+
+  if (props.placeholder)
+    return props.placeholder
+
+  return isField.value
+    ? `Select ${props.label}`.trim()
+    : "All"
+})
 
 const dependsQuery = computed(() => {
   const d = props.depends || {}
@@ -65,19 +211,28 @@ function remember(it: LookupItem) {
   }
 }
 
-function mapItem(raw: any): LookupItem {
-  const value = raw?.value ?? raw?.[valueKey.value] ?? raw?.id
+function mapItem(
+  raw: Record<string, any>,
+): LookupItem {
+  const value =
+    raw?.value
+    ?? raw?.[valueKey.value]
+    ?? raw?.id
 
   const label = String(
-    raw?.label ??
-      raw?.[labelKey.value] ??
-      raw?.name ??
-      raw?.title ??
-      raw?.code ??
-      value
+    raw?.label
+    ?? raw?.[labelKey.value]
+    ?? raw?.name
+    ?? raw?.title
+    ?? raw?.code
+    ?? value,
   )
 
-  return { value, label }
+  return {
+    value,
+    label,
+    raw,
+  }
 }
 
 function resetList() {
@@ -144,7 +299,12 @@ async function fetchLabelById(id: number) {
         },
       })
 
-      const raw = res?.results?.[0]
+      const normalized =
+        normalizeListResponse(res)
+
+      const raw =
+        normalized.results[0]
+
       if (raw) {
         const mapped = mapItem(raw)
         remember(mapped)
@@ -177,11 +337,20 @@ async function load(reset = false) {
       },
     })
 
-    hasNext.value = !!res?.next
+    const normalized =
+      normalizeListResponse(res)
 
-    const newItems = (res?.results ?? [])
-      .map(mapItem)
-      .filter((it) => it.value !== null && it.value !== undefined)
+    hasNext.value =
+      Boolean(normalized.next)
+
+    const newItems =
+      normalized.results
+        .map(mapItem)
+        .filter(
+          it =>
+            it.value !== null
+            && it.value !== undefined,
+        )
 
     newItems.forEach(remember)
 
@@ -205,16 +374,57 @@ function closeDropdown() {
   open.value = false
 }
 
-function selectItem(it: LookupItem) {
-  remember(it)
-  model.value = it.value
+function selectItem(
+  item: LookupItem,
+) {
+  remember(item)
+
+  // Dropdown **tidak** ditutup pada mode centang: yang mencentang dua
+  // lokasi harus bisa mencentang keduanya tanpa membuka ulang.
+  if (props.multiple) {
+    toggleItem(item)
+    return
+  }
+
+  model.value = item.value
+  emit(
+    "select",
+    item.raw,
+  )
   closeDropdown()
 }
 
+function toggleItem(item: LookupItem) {
+  const value = Number(item.value)
+
+  const next = isChecked(value)
+    ? selectedIds.value.filter(id => id !== value)
+    : [...selectedIds.value, value]
+
+  emit("update:modelValue", next)
+  emit("select", item.raw)
+}
+
 function clearValue() {
+  if (props.multiple) {
+    // Tidak ada yang dicentang = tanpa penyaringan. Dikirim sebagai
+    // array kosong, bukan null: `cleanQuery` membuang string kosong,
+    // jadi keduanya sampai ke backend sebagai "tidak disebut" — tapi
+    // array kosong tetap menjaga bentuk nilainya konsisten.
+    emit("update:modelValue", [])
+    emit("select", null)
+    return
+  }
+
   model.value = null
+  emit(
+    "select",
+    null,
+  )
   closeDropdown()
 }
+
+
 
 function onScroll(e: Event) {
   const el = e.target as HTMLElement
@@ -262,6 +472,47 @@ const selectedLabel = computed(() => {
     undefined
   )
 })
+
+/*
+ * Teks tombol pada mode centang.
+ *
+ * Satu terpilih tetap menyebut namanya — "Jakarta HO" jauh lebih
+ * berguna daripada "1 dipilih" di kasus yang paling sering terjadi.
+ * Dua ke atas baru dicacah, karena menderetkan namanya membuat tombol
+ * melebar sampai mendorong pemilih periode ke baris berikutnya.
+ */
+const multipleLabel = computed(() => {
+  const ids = selectedIds.value
+
+  if (!ids.length)
+    return nullLabel.value
+
+  if (ids.length === 1) {
+    const id = ids[0] as number
+
+    return (
+      items.value.find(item => item.value === id)?.label
+      || labelCache.value[id]
+      || String(id)
+    )
+  }
+
+  return translate("common.labels.selected", `${ids.length} selected`, { count: ids.length })
+})
+
+// Label id terpilih ikut diambil walau barisnya belum pernah termuat —
+// tanpa ini tombolnya berbunyi angka mentah ("13") saat halaman dibuka
+// dengan filter yang sudah terisi dari state sebelumnya.
+watch(
+  selectedIds,
+  (ids) => {
+    ids.forEach((id) => {
+      if (!labelCache.value[id])
+        fetchLabelById(id)
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -281,7 +532,13 @@ const selectedLabel = computed(() => {
           <span class="font-medium">{{ label }}:</span>
         </template>
 
-        {{ model != null ? (selectedLabel ?? model) : nullLabel }}
+        <template v-if="multiple">
+          {{ multipleLabel }}
+        </template>
+
+        <template v-else>
+          {{ model != null ? (selectedLabel ?? model) : nullLabel }}
+        </template>
       </span>
 
       <Icon name="i-radix-icons-chevron-down" class="ml-2 h-4 w-4 opacity-70" />
@@ -312,19 +569,34 @@ const selectedLabel = computed(() => {
           v-if="allowNull && !searchInput.trim()"
           class="w-full px-3 py-2 text-left text-sm hover:bg-muted"
           type="button"
+          :class="multiple && !selectedIds.length ? 'font-medium' : ''"
           @click="clearValue"
         >
-          {{ nullLabel }}
+          {{ multiple ? `${nullLabel} (kosongkan)` : nullLabel }}
         </button>
 
         <button
           v-for="it in items"
           :key="it.value"
-          class="w-full px-3 py-2 text-left text-sm hover:bg-muted"
+          class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
           type="button"
           @click="selectItem(it)"
         >
-          {{ it.label }}
+          <span
+            v-if="multiple"
+            class="flex size-4 shrink-0 items-center justify-center rounded-sm border"
+            :class="isChecked(it.value)
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-input'"
+          >
+            <Icon
+              v-if="isChecked(it.value)"
+              name="i-lucide-check"
+              class="size-3"
+            />
+          </span>
+
+          <span class="truncate">{{ it.label }}</span>
         </button>
 
         <div

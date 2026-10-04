@@ -1,5 +1,6 @@
 export { default as MTable } from "./components/table/MTable.vue"
 export { default as MColumnHeader } from "./components/table/MColumnHeader.vue"
+export { default as MIdentityCell } from "./components/table/MIdentityCell.vue"
 export { default as MRowActions } from "./components/table/MRowActions.vue"
 export { default as MTableToolbar } from "./components/table/MTableToolbar.vue"
 export { default as MPagination } from "./components/table/MPagination.vue"

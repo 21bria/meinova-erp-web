@@ -1,6 +1,15 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 
+/*
+ * Deteksi sumber otomatis Tailwind v4 berangkat dari root Vite, yaitu
+ * `app/`. Akibatnya kelas yang HANYA dipakai di `framework/` tidak
+ * pernah ikut digenerate — itu penyebab span grid dashboard dulu selalu
+ * jatuh jadi satu kolom penuh: `xl:col-span-4` memang tidak ada di CSS.
+ * Direktori framework harus didaftarkan eksplisit.
+ */
+@source "../../../framework";
+
 @custom-variant dark (&:is(.dark *));
 
 @import './themes.css';

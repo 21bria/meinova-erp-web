@@ -1,5 +1,7 @@
 import { ref } from "vue"
-import { normalizeApiErrors } from "../utils/errors"
+import { translate } from "../utils/i18n"
+import { useNotify } from "@/composables/useNotify"
+import { apiErrorMessage, normalizeApiErrors, wasReported } from "../utils/errors"
 
 type CrudActions = {
   create: (payload: any) => Promise<any>
@@ -21,6 +23,19 @@ export function useCrudDialog<T = any>(
   crud: CrudActions,
   options: Options = {},
 ) {
+
+  /*
+  | Notifikasi tidak lagi bergantung pada pemanggil.
+  |
+  | Dari 196 pemakaian composable CRUD di seluruh modul, hanya 4 yang
+  | mengoper `notify` — tiga tabel Security yang ditambal tangan. Sisanya
+  | memakai `options.notify?.error(...)`, dan optional-chaining
+  | pada `undefined` **tidak melakukan apa-apa**: request ditolak 403, dialog
+  | tetap terbuka, dan tidak ada satu kalimat pun yang muncul. Generator
+  | tidak pernah menghasilkan `notify`, jadi ini tidak bisa diserahkan ke
+  | sisi pemanggil — modul yang diregenerate akan diam lagi.
+  */
+  const notify = options.notify ?? useNotify()
   const open = ref(false)
   const mode = ref<"create" | "edit">("create")
   const selected = ref<T | null>(null)
@@ -51,7 +66,7 @@ export function useCrudDialog<T = any>(
     try {
       if (mode.value === "create") {
         await crud.create(payload)
-        options.notify?.success(`${entity} "${label}" created`)
+        notify.success(translate("common.messages.createdEntity", `${entity} "${label}" created`, { entity, label }))
       } else {
         const id = options.getId?.(payload) ?? payload.id
 
@@ -60,25 +75,20 @@ export function useCrudDialog<T = any>(
         }
 
         await crud.update(id, payload)
-        options.notify?.success(`${entity} "${label}" updated`)
+        notify.success(translate("common.messages.updatedEntity", `${entity} "${label}" updated`, { entity, label }))
       }
 
       open.value = false
-    // } catch (e: any) {
-    //   errors.value = e?.data ?? { detail: e?.message || "Failed to save" }
-    //   options.notify?.error(errors.value?.detail || "Failed to save")
     } catch (e: any) {
       errors.value = normalizeApiErrors(e)
-      const message =
-        e?.data?.message
-        ?? e?.data?.detail
-        ?? e?.response?._data?.message
-        ?? e?.response?._data?.detail
-        ?? e?.response?.data?.message
-        ?? e?.response?.data?.detail
-        ?? e?.message
-        ?? "Failed to save"
-      options.notify?.error(message)
+
+      // `normalizeApiErrors` sudah menampilkan error yang tidak menempel
+      // ke kolom mana pun. Diperiksa lewat `wasReported`, bukan dengan
+      // memanggil `reportApiError` di sini, supaya `options.notify`
+      // buatan pemanggil tetap dipakai kalau ada — tiga tabel Security
+      // mengopernya.
+      if (!wasReported(e))
+        notify.error(apiErrorMessage(e, translate("common.errors.save", "Failed to save record.")))
     } finally {
       loading.value = false
     }

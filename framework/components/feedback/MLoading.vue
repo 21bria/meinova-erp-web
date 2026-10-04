@@ -6,6 +6,6 @@ defineProps<{
 
 <template>
   <div class="rounded-lg border py-16 text-center text-sm text-muted-foreground">
-    {{ text ?? "Loading..." }}
+    {{ text ?? $t('common.state.loading') }}
   </div>
 </template>

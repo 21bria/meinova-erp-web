@@ -7,6 +7,9 @@ export default {
     clearSearch: 'Kosongkan pencarian',
     selectField: 'Pilih {label}',
     goToCard: 'Ke kartu {label}',
+    goToCardGroup: 'Ke kelompok metrik {index}',
+    previousMetrics: 'Metrik sebelumnya',
+    nextMetrics: 'Metrik berikutnya',
     save: 'Simpan',
     saving: 'Menyimpan...',
     cancel: 'Batal',
@@ -52,6 +55,7 @@ export default {
     posted: 'Diposting',
     cancelled: 'Dibatalkan',
     completed: 'Selesai',
+    on_trip: 'Sedang Dinas',
     in_progress: 'Sedang Berjalan',
     failed: 'Gagal',
     returned: 'Dikembalikan',
@@ -322,6 +326,7 @@ export default {
     late: 'Terlambat',
     early: 'Pulang Cepat',
     absent: 'Tidak Hadir',
+    business_trip: 'Perjalanan Dinas',
     annual: 'Cuti Tahunan',
     sick: 'Sakit',
     other_leave: 'Cuti Lainnya',
@@ -373,6 +378,7 @@ export default {
 
   labels: {
     employees: 'Karyawan',
+    keyMetrics: 'Metrik utama',
     account: 'Akun',
     period_filter: 'Periode',
     history: 'Riwayat',
@@ -498,6 +504,10 @@ export default {
    * ditaruh di sini hanya arti yang paling umum. Layar yang memakainya
    * dengan arti lain menulis sendiri di katalog modulnya.
    */
+  workspace: {
+    saveFirst: 'Simpan data ini terlebih dahulu untuk memakai bagian ini.',
+  },
+
   tabs: {
     general: 'Umum',
     organization: 'Organisasi',

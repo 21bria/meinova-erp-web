@@ -1,3 +1,4 @@
+import assets from './assets'
 import codes from './codes'
 import common from './common'
 import finance from './finance'
@@ -12,6 +13,7 @@ import settings from './settings'
 import workflow from './workflow'
 
 export default {
+  assets,
   codes,
   common,
   finance,

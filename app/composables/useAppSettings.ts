@@ -2,6 +2,8 @@ import type { AppSettings } from '~/types/appSettings'
 
 import { createDefu } from 'defu'
 
+import { DEFAULT_LOCALE } from '~/i18n/config'
+
 const customDefu = createDefu((obj, key, value) => {
   if (Array.isArray(value) && value.every((x: any) => typeof x === 'string')) {
     obj[key] = value
@@ -19,6 +21,9 @@ const defaultAppSettings: AppSettings = {
     color: 'default',
     type: 'default',
   },
+  // Bahasa antarmuka. Menumpang cookie preferensi yang sudah ada
+  // alih-alih cookie sendiri — lihat `types/appSettings.d.ts`.
+  locale: DEFAULT_LOCALE,
 }
 
 export function useAppSettings() {
@@ -38,5 +43,9 @@ export function useAppSettings() {
     updateAppSettings,
     sidebar: computed(() => cookieAppSettings.value.sidebar),
     theme: computed(() => cookieAppSettings.value.theme),
+    // Nilai mentah dari cookie. Untuk mengganti bahasa pakai
+    // `useLocale()` — di sana UI, cookie, dan akun diperbarui bersama;
+    // menulis ke sini saja hanya menggeser cookie-nya.
+    locale: computed(() => cookieAppSettings.value.locale),
   }
 }

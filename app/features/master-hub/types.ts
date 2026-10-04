@@ -32,6 +32,18 @@ export interface MasterHubProps {
   searchPlaceholder?: string
   allCategoryLabel?: string
 
+  /*
+   * Sebutan isi hub di baris hitungan kaki ("Showing 5 …").
+   *
+   * Ada karena komponen ini bukan lagi khusus master: hub seksi
+   * (Attendance & Leave, Roster & Travel, Visitor) memuat **layar**,
+   * dan "Showing 5 master modules" di sana salah menyebut isinya.
+   * Bawaannya tetap master, jadi seluruh hub yang sudah ada tidak
+   * berubah satu kata pun.
+   */
+  itemNoun?: string
+  itemNounPlural?: string
+
   emptyTitle?: string
   emptyDescription?: string
 

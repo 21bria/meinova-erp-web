@@ -16,8 +16,8 @@ const emit = defineEmits<{
 <template>
   <ConfirmDelete
     :open="open"
-    :title="title ?? 'Delete Data'"
-    :description="description ?? 'Are you sure you want to delete this data? This action cannot be undone.'"
+    :title="title ?? $t('common.state.deleteTitle')"
+    :description="description ?? $t('common.state.deleteBody')"
     @update:open="(v) => emit('update:open', v)"
     @confirm="() => emit('confirm')"
   />

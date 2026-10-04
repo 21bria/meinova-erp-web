@@ -8,11 +8,11 @@ defineProps<{
 <template>
   <div class="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
     <div class="text-sm font-medium text-destructive">
-      {{ title ?? "Something went wrong" }}
+      {{ title ?? $t('common.state.error') }}
     </div>
 
     <p class="mt-1 text-sm text-muted-foreground">
-      {{ message ?? "Please try again or contact administrator." }}
+      {{ message ?? $t('common.state.errorBody') }}
     </p>
   </div>
 </template>

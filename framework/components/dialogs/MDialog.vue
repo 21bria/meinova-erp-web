@@ -7,18 +7,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+import type {
+  DialogWidth,
+} from "../../core/types/form"
+
 const props = defineProps<{
   open: boolean
   title?: string
   description?: string
-  width?: "sm" | "md" | "lg" | "xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl"
+  width?: DialogWidth
 }>()
 
 const emit = defineEmits<{
   (e: "update:open", value: boolean): void
 }>()
 
-const widthClass = {
+const widthClass: Record<DialogWidth, string> = {
   sm: "sm:max-w-sm",
   md: "sm:max-w-md",
   lg: "sm:max-w-lg",

@@ -27,10 +27,30 @@ const model = computed({
   set: value => emit("update:modelValue", value),
 })
 
+/**
+ * Tipe dari schema backend → tipe yang benar-benar dirender form.
+ *
+ * `MFormBuilder` hanya mengenal 13 tipe; sisanya jatuh ke `v-if` yang
+ * tidak ada cabangnya, dan **fieldnya hilang tanpa error** — kotak
+ * seksinya tetap tergambar, jadi hasilnya terbaca seperti setelan yang
+ * memang belum ada isinya.
+ *
+ * `integer`/`decimal` dan `boolean` datang apa adanya dari introspeksi
+ * model Django (`PositiveSmallIntegerField`, `BooleanField`), jadi
+ * pemetaannya harus di sini — bukan dengan meminta backend menyebut
+ * nama tipe milik komponen frontend.
+ */
 function resolveFormFieldType(
   type: SettingField["type"],
 ): FormField["type"] {
   switch (type) {
+    case "integer":
+    case "decimal":
+      return "number"
+
+    case "boolean":
+      return "switch"
+
     case "url":
     case "tel":
     case "color":
@@ -45,11 +65,26 @@ function resolveFormFieldType(
   }
 }
 
+/**
+ * Field satu seksi, dari nama atau dari objeknya langsung.
+ *
+ * `name` disuntikkan saat dilihat lewat nama, karena `fields` di schema
+ * hasil introspeksi backend adalah **peta ber-key nama** dan isinya
+ * tidak mengulang namanya. Tanpa ini `key: field.name` di bawah bernilai
+ * undefined, dan seluruh field seksi ini hilang dari layar — kotak
+ * seksinya tetap tergambar lengkap dengan judulnya, jadi hasilnya
+ * terbaca seperti setelan yang memang belum ada isinya.
+ */
 const sectionFields = computed<SettingField[]>(() => {
   return props.section.fields
     .map((item) => {
-      if (typeof item === "string")
-        return props.fields[item]
+      if (typeof item === "string") {
+        const found = props.fields[item]
+
+        return found
+          ? { ...found, name: found.name ?? item }
+          : undefined
+      }
 
       return item
     })

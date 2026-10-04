@@ -8,11 +8,11 @@ defineProps<{
 <template>
   <div class="rounded-lg border border-dashed py-16 text-center">
     <div class="text-sm font-medium">
-      {{ title ?? "No data found" }}
+      {{ title ?? $t('common.state.noData') }}
     </div>
 
     <p class="mt-1 text-sm text-muted-foreground">
-      {{ description ?? "Try adjusting your search or filters." }}
+      {{ description ?? $t('common.state.adjustFilters') }}
     </p>
   </div>
 </template>

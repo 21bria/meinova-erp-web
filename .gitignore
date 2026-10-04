@@ -22,3 +22,16 @@ logs
 .env
 .env.*
 !.env.example
+
+# ==========================================
+# Claude Code machine-local settings
+# (was only ignored via ~/.config/git/ignore, so it would
+#  reappear on any other clone of this repo)
+# ==========================================
+.claude
+.claude/settings.local.json
+CLAUDE.backup.md
+CLAUDE.md
+
+# AI working notes stay local
+docs/claude/

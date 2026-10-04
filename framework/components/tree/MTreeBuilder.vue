@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { translate } from "../../core/utils/i18n"
 import type { TreeNode, TreeConfig } from "@framework"
 import MTreeToolbar from './MTreeToolbar.vue'
 import MTreeSearch from './MTreeSearch.vue'
 import MTreeNode from './MTreeNode.vue'
 import { useApi } from '@/composables/useApi'
 import { useNotify } from '@/composables/useNotify'
+import { apiErrorMessage } from '@framework'
 
 const props = defineProps<{
   config: TreeConfig
@@ -22,9 +24,43 @@ const search = ref('')
 const query = ref<Record<string, any>>({})
 const checkedKeys = ref<(string | number)[]>([])
 
+/**
+ * Syarat tambahan per simpul (`{id: rule}`), untuk layar yang
+ * memakainya — hari ini Menu Permissions.
+ *
+ * Dikirim apa adanya ke `save_endpoint`; layar tree yang simpulnya
+ * tidak punya `rule_options` menghasilkan objek kosong dan tidak
+ * berubah perilakunya sama sekali.
+ */
+const nodeRules = ref<Record<string, string>>({})
+
 const title = computed(() => schema.value?.title ?? 'Tree Builder')
 const description = computed(() => schema.value?.description ?? '')
 const selectedCount = computed(() => checkedKeys.value.length)
+
+/**
+ * Layar yang hanya boleh dibaca.
+ *
+ * Dua sumber, dan keduanya harus dihormati: `ui.readonly` (pilihan
+ * layarnya) dan `save_endpoint` yang tidak ada sama sekali (backend
+ * memang tidak punya jalur simpan). Sebelum ini tombol Save tetap
+ * terbit di keduanya dan `saveTree()` diam-diam `return` — orang
+ * mencentang, menekan Save, dan **tidak ada apa pun yang terjadi**,
+ * tanpa satu pesan pun. Itu kegagalan yang paling mahal: yang
+ * menyimpan pulang dengan yakin tersimpan.
+ */
+const readOnly = computed(
+  () => Boolean(schema.value?.ui?.readonly) || !schema.value?.save_endpoint,
+)
+
+/** Filter wajib yang belum diisi — penyebab paling umum pohon kosong. */
+const missingQuery = computed(() => {
+  const fields = schema.value?.query ?? {}
+
+  return Object.entries<any>(fields)
+    .filter(([key, field]) => field?.required && !query.value[key])
+    .map(([key, field]) => String(field?.label ?? key))
+})
 const expandAll = ref(schema.value?.ui?.expand_all ?? true)
 
 async function loadSchema() {
@@ -35,7 +71,7 @@ async function loadSchema() {
     })
   }
   catch (e: any) {
-    notify.error(e?.data?.detail || e?.message || 'Failed to load tree schema')
+    notify.error(apiErrorMessage(e, translate("common.errors.loadSchema", "Failed to load schema.")))
   }
   finally {
     loading.value = false
@@ -54,9 +90,10 @@ async function loadTree() {
     })
 
     checkedKeys.value = collectChecked(nodes.value)
+    nodeRules.value = collectRules(nodes.value)
   }
   catch (e: any) {
-    notify.error(e?.data?.detail || e?.message || 'Failed to load tree data')
+    notify.error(apiErrorMessage(e, translate("common.errors.loadData", "Failed to load data.")))
   }
   finally {
     loading.value = false
@@ -74,13 +111,14 @@ async function saveTree() {
       body: {
         ...query.value,
         resources: checkedKeys.value,
+        rules: nodeRules.value,
       },
     })
 
     notify.success('Tree data saved')
   }
   catch (e: any) {
-    notify.error(e?.data?.detail || e?.message || 'Failed to save tree data')
+    notify.error(apiErrorMessage(e, translate("common.errors.save", "Failed to save record.")))
   }
   finally {
     saving.value = false
@@ -102,6 +140,30 @@ function collectChecked(items: TreeNode[]) {
 
   walk(items)
   return result
+}
+
+function collectRules(items: TreeNode[]) {
+  const result: Record<string, string> = {}
+
+  function walk(list: TreeNode[]) {
+    for (const item of list) {
+      if ((item as any).rule_options?.length && (item as any).rule)
+        result[String(item.id)] = (item as any).rule
+
+      if (item.children?.length)
+        walk(item.children)
+    }
+  }
+
+  walk(items)
+  return result
+}
+
+function setNodeRule(node: TreeNode, rule: string) {
+  nodeRules.value = {
+    ...nodeRules.value,
+    [String(node.id)]: rule,
+  }
 }
 
 function toggleNode(node: TreeNode, checked: boolean) {
@@ -147,6 +209,7 @@ onMounted(loadSchema)
       :schema="schema"
       :loading="loading"
       :saving="saving"
+      :read-only="readOnly"
       @load="loadTree"
       @save="saveTree"
     />
@@ -155,9 +218,18 @@ onMounted(loadSchema)
         <span class="text-sm font-medium">Selected: {{ selectedCount }}</span>
         <button type="button" class="btn btn-outline btn-sm" @click="expandTree">Expand All</button>
         <button type="button" class="btn btn-outline btn-sm" @click="collapseTree">Collapse All</button>
-        <button type="button" class="btn btn-primary btn-sm" :disabled="saving" @click="saveTree">
+        <button
+          v-if="!readOnly"
+          type="button"
+          class="btn btn-primary btn-sm"
+          :disabled="saving"
+          @click="saveTree"
+        >
           Save
         </button>
+        <span v-else class="text-sm text-muted-foreground">
+          Read-only
+        </span>
       </div>
     </div>
 
@@ -175,6 +247,16 @@ onMounted(loadSchema)
         Loading tree data...
       </div>
 
+      <!--
+        Dipisah dari "tidak ada data". Sebelumnya keduanya menulis
+        "No resources found.", jadi layar yang belum dipilih filternya
+        terbaca seperti master yang kosong — dan orang mencari sebabnya
+        di tempat yang salah.
+      -->
+      <div v-else-if="missingQuery.length" class="text-sm text-muted-foreground">
+        Pilih {{ missingQuery.join(' dan ') }} lebih dulu, lalu tekan Load Tree.
+      </div>
+
       <div v-else-if="!nodes.length" class="text-sm text-muted-foreground">
         No resources found.
       </div>
@@ -186,7 +268,9 @@ onMounted(loadSchema)
           :node="node"
           :search="search"
           :checked-keys="checkedKeys"
+          :rules="nodeRules"
           @toggle="toggleNode"
+          @rule-change="setNodeRule"
         />
       </div>
     </div>

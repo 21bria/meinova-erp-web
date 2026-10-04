@@ -111,4 +111,41 @@ const { editor } = useRichEditor(
   background: hsl(var(--muted));
   padding: 0.75rem 1rem;
 }
+
+/*
+  Gambar. Tangkapan layar lazimnya jauh lebih lebar daripada kolom
+  editornya — tanpa batas ini, satu screenshot 2000px mendorong
+  seluruh editor melebar dan formulirnya bisa digulir ke samping.
+*/
+:deep(.tiptap img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.75rem 0;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--border));
+}
+
+:deep(.tiptap img.ProseMirror-selectednode) {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/*
+  Video sematan. Tanpa tinggi eksplisit, iframe bawaan browser
+  setinggi 150px — videonya masuk tapi terlihat seperti pita hitam,
+  dan penulisnya menyangka sematannya gagal.
+*/
+:deep(.tiptap iframe) {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  margin: 0.75rem 0;
+  border-radius: 0.375rem;
+}
+
+:deep(.tiptap iframe.ProseMirror-selectednode) {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
 </style>

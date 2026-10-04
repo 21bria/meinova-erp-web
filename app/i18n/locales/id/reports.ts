@@ -18,6 +18,7 @@ export default {
         scheduled: 'Terjadwal',
         present: 'Hadir',
         absent: 'Tidak Hadir',
+        business_trip: 'Perjalanan Dinas',
         annual: 'Cuti Tahunan',
         sick: 'Sakit',
         other_leave: 'Cuti Lainnya',

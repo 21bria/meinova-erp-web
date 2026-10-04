@@ -6,11 +6,13 @@ const route = useRoute()
 const showGlobalSearch = computed(() => Boolean(route.meta.showGlobalSearch))
 
 function setLinks() {
-  if (route.fullPath === '/') {
+  // `path`, bukan `fullPath`: query (mis. `?mode=my`) bukan bagian dari
+  // jejak halaman dan tidak boleh tercetak di breadcrumb.
+  if (route.path === '/') {
     return [{ title: 'Home', href: '/' }]
   }
 
-  const segments = route.fullPath.split('/').filter(item => item !== '')
+  const segments = route.path.split('/').filter(item => item !== '')
 
   const breadcrumbs = segments.map((item, index) => {
     const str = item.replace(/-/g, ' ')
@@ -60,7 +62,9 @@ const links = computed(() => setLinks())
     </div>
 
     <!-- Right -->
-    <div class="flex flex-1 justify-end">
+    <div class="flex flex-1 items-center justify-end gap-1">
+      <LayoutNotificationBell />
+
       <slot />
     </div>
   </header>

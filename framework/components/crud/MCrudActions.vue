@@ -35,13 +35,13 @@ const emit = defineEmits<{
     <DropdownMenuContent align="end" side="bottom" :side-offset="6" class="z-50 w-44 bg-popover">
       <DropdownMenuItem v-if="props.showEdit" class="cursor-pointer" @select="emit('edit', props.row)">
         <Edit class="mr-2 size-4" />
-        <span>Edit</span>
+        <span>{{ $t('common.actions.edit') }}</span>
       </DropdownMenuItem>
 
       <DropdownMenuItem v-if="props.showDelete" class="cursor-pointer text-destructive focus:text-destructive"
         @select="emit('delete', props.row)">
         <Trash2 class="mr-2 size-4" />
-        <span>Delete</span>
+        <span>{{ $t('common.actions.delete') }}</span>
       </DropdownMenuItem>
 
       <slot :row="props.row" />

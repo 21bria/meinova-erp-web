@@ -1,0 +1,8 @@
+export { default as MDashboard } from "./MDashboard.vue"
+export { default as MDashboardAdvancedFilters } from "./MDashboardAdvancedFilters.vue"
+export { default as MDashboardChart } from "./MDashboardChart.vue"
+export { default as MDashboardFilters } from "./MDashboardFilters.vue"
+export { default as MDashboardList } from "./MDashboardList.vue"
+export { default as MDashboardPeriodPicker } from "./MDashboardPeriodPicker.vue"
+export { default as MDashboardStat } from "./MDashboardStat.vue"
+export { default as MDashboardTable } from "./MDashboardTable.vue"

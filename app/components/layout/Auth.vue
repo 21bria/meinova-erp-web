@@ -17,8 +17,8 @@ const year = new Date().getFullYear()
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.12)_1px,transparent_0)] bg-[length:24px_24px] opacity-15" />
 
       <div class="relative z-20 flex items-center gap-3 text-lg font-semibold">
-        <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/7 ring-1 ring-white/15 backdrop-blur">
-          <img src="/meinova.png" class="size-14 object-contain">
+        <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/1 ring-1 ring-white/1 backdrop-blur">
+          <img src="/meinova_white.png" class="size-18 object-contain">
         </div>
       </div>
 
@@ -35,6 +35,18 @@ const year = new Date().getFullYear()
           <p class="max-w-lg text-base leading-7 text-white/65">
             Manage finance, HR, payroll, supply chain, workflow, and reporting in one secure business platform.
           </p>
+
+          <!-- Product philosophy -->
+          <div class="pt-5">
+            <div class="mb-4 h-px w-12 bg-white/20" />
+
+            <p class="max-w-lg text-lg font-medium leading-7 tracking-tight text-white/90">
+              Don’t teach people ERP.
+              <span class="block text-white/65">
+                Teach ERP how people work.
+              </span>
+            </p>
+          </div>
         </div>
       </div>
 

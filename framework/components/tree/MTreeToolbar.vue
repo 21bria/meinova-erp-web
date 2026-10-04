@@ -7,6 +7,8 @@ defineProps<{
   schema?: TreeSchema
   loading?: boolean
   saving?: boolean
+  /** Layar baca-saja: tombol Save tidak diterbitkan sama sekali. */
+  readOnly?: boolean
 }>()
 
 const query = defineModel<Record<string, any>>('query', {
@@ -52,6 +54,7 @@ defineEmits<{
     </Button>
 
     <Button
+      v-if="!readOnly"
       :disabled="saving"
       @click="$emit('save')"
     >

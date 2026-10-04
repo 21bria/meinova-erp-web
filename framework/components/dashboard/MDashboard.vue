@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
+import { computed } from "vue"
 import { translate } from "../../core/utils/i18n"
 
 import { useDashboard } from "@framework/core/composables/useDashboard"
-import { daysBetween, spanClass, statGridClass } from "@framework/core/utils/dashboard"
+import { daysBetween, spanClass } from "@framework/core/utils/dashboard"
 
-import type { CarouselApi } from "@/components/ui/carousel"
 import type {
   DashboardChartData,
   DashboardChartWidget,
@@ -48,8 +47,8 @@ const {
   setFilter,
 } = useDashboard(props.schema)
 
-// Kartu KPI dipisah dari sisanya karena perlakuannya beda: di layar
-// kecil dia jadi carousel yang digeser jari, di layar lebar jadi grid.
+// Kartu KPI dipisah dari sisanya karena perlakuannya beda: satu track
+// mendatar yang digeser, bukan sel-sel di grid dua belas kolom.
 const statWidgets = computed(
   () => widgets.value.filter(
     (item): item is DashboardStatWidget => item.type === "stat",
@@ -59,6 +58,13 @@ const statWidgets = computed(
 const bodyWidgets = computed(
   () => widgets.value.filter(item => item.type !== "stat"),
 )
+
+// Dibungkus di sini, bukan di template: `widgetData` generik, dan
+// parameter tipe di dalam ekspresi template tidak selalu terbaca sama
+// oleh pengurai-nya.
+function statData(key: string) {
+  return widgetData<DashboardStatData>(key)
+}
 
 /*
  * Bunyi chart yang kosong, dan bunyinya bergantung apakah layar ini
@@ -97,10 +103,6 @@ const heading = computed(
   () => props.title ?? props.schema.title ?? "Dashboard",
 )
 
-function cardAriaLabel(label: string) {
-  return translate("common.actions.goToCard", `Go to card ${label}`, { label })
-}
-
 const description = computed(() => props.subtitle ?? props.schema.description ?? "")
 
 const rangeCaption = computed(() => {
@@ -108,26 +110,6 @@ const rangeCaption = computed(() => {
 
   return days > 1 ? `${days} hari` : "1 hari"
 })
-
-/*
- * Carousel hanya hidup di breakpoint kecil; di atas itu kartu memakai
- * grid biasa. Dipisah lewat CSS, bukan `useMediaQuery`, supaya render
- * di server dan di klien menghasilkan markup yang sama.
- */
-const carouselApi = ref<CarouselApi>()
-const activeSlide = ref(0)
-
-function onCarouselInit(api: CarouselApi) {
-  carouselApi.value = api
-
-  api?.on("select", () => {
-    activeSlide.value = api.selectedScrollSnap()
-  })
-}
-
-function goToSlide(index: number) {
-  carouselApi.value?.scrollTo(index)
-}
 </script>
 
 <template>
@@ -257,58 +239,20 @@ function goToSlide(index: number) {
       </AlertDescription>
     </Alert>
 
-    <template v-if="statWidgets.length">
-      <!-- Layar kecil: kartu digeser seperti tumpukan kartu bank. -->
-      <div class="sm:hidden">
-        <Carousel
-          class="w-full"
-          :opts="{ align: 'start', containScroll: 'trimSnaps' }"
-          @init-api="onCarouselInit"
-        >
-          <CarouselContent class="-ml-3">
-            <CarouselItem
-              v-for="(widget, index) in statWidgets"
-              :key="widget.key"
-              class="basis-[80%] pl-3"
-            >
-              <MDashboardStat
-                :widget="widget"
-                :data="widgetData<DashboardStatData>(widget.key)"
-                :loading="loading"
-                :index="index"
-              />
-            </CarouselItem>
-          </CarouselContent>
-        </Carousel>
+    <!--
+      Satu baris kartu KPI yang digulir mendatar, di semua ukuran layar.
 
-        <div class="mt-3 flex items-center justify-center gap-1.5">
-          <button
-            v-for="(widget, index) in statWidgets"
-            :key="widget.key"
-            type="button"
-            class="h-1.5 rounded-full transition-all duration-300"
-            :class="
-              activeSlide === index
-                ? 'w-5 bg-primary'
-                : 'w-1.5 bg-muted-foreground/30'
-            "
-            :aria-label="cardAriaLabel(widget.label ?? String(index + 1))"
-            @click="goToSlide(index)"
-          />
-        </div>
-      </div>
-
-      <div class="hidden gap-4 sm:grid" :class="statGridClass(statWidgets.length)">
-        <MDashboardStat
-          v-for="(widget, index) in statWidgets"
-          :key="widget.key"
-          :widget="widget"
-          :data="widgetData<DashboardStatData>(widget.key)"
-          :loading="loading"
-          :index="index"
-        />
-      </div>
-    </template>
+      Sebelumnya ada dua susunan: carousel di bawah `sm` dan grid di
+      atasnya. Gridnya membungkus begitu kartunya lebih banyak dari
+      kolomnya — delapan kartu Payroll Dashboard jadi enam + dua, dan
+      widget di bawahnya terdorong turun satu baris penuh.
+    -->
+    <MDashboardStatCarousel
+      v-if="statWidgets.length"
+      :widgets="statWidgets"
+      :data-for="statData"
+      :loading="loading"
+    />
 
     <!--
       Diregangkan (`items-stretch` bawaan grid), **bukan** `items-start`.
