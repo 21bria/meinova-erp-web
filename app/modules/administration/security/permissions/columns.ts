@@ -1,40 +1,41 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
-export type PermissionRow = {
-  id: number
-  code: string
-  name: string
-  module: string
-  model: string
-}
+import type { PermissionsRow } from "./types"
 
 type ColumnActions = {
-  onEdit: (row: PermissionRow) => void
-  onDelete: (row: PermissionRow) => void
+  onEdit?: (row: PermissionsRow) => void
+  onDelete?: (row: PermissionsRow) => void
 }
 
 type ColumnOptions = {
   role?: UserRole
 }
 
-export function getPermissionColumns(
-  actions: ColumnActions,
+export function getPermissionsColumns(
+  actions: ColumnActions = {},
   opts: ColumnOptions = {},
-): ColumnDef<PermissionRow>[] {
-  const role = opts.role ?? "USER"
-  const canMutate = role !== "VIEWER"
+): ColumnDef<PermissionsRow>[] {
+  const role = opts.role ?? "SITE_USER"
 
-  return createColumns<PermissionRow>({
-    selectable: true,
+  const canMutateByRole =
+    role !== "GLOBAL_VIEWER"
+    && role !== "VIEWER"
+
+  const canMutate =
+    canMutateByRole
+    && Boolean(actions.onEdit || actions.onDelete)
+
+  return createColumns<PermissionsRow>({
+    selectable: canMutate,
     canMutate,
     actions,
     items: [
-      column.text("code", "Code"),
-      column.text("name", "Permission"),
-      column.text("module", "Module"),
-      column.text("model", "Model"),
+      column.text("name", resourceLabel("administration.security.permissions.fields.name", "Permission")),
+      column.text("code", resourceLabel("administration.security.permissions.fields.code", "Codename")),
+      column.text("module", resourceLabel("administration.security.permissions.fields.module", "Module")),
+      column.text("model", resourceLabel("administration.security.permissions.fields.model", "Object")),
     ],
   })
 }

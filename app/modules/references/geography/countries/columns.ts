@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { CountriesRow } from "./types"
 
@@ -32,11 +32,11 @@ export function getCountriesColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("phone_code", "Phone Code"),
-      column.text("currency_code", "Currency Code"),
+      column.status("is_active", resourceLabel("references.geography.countries.fields.is_active", "Active")),
+      column.text("code", resourceLabel("references.geography.countries.fields.code", "Code")),
+      column.text("name", resourceLabel("references.geography.countries.fields.name", "Name")),
+      column.text("phone_code", resourceLabel("references.geography.countries.fields.phone_code", "Phone Code")),
+      column.text("currency_code", resourceLabel("references.geography.countries.fields.currency_code", "Currency Code")),
     ],
   })
 }

@@ -5,14 +5,10 @@ export type DivisionRow = {
   company_name?: string | null
   branch: number | null
   branch_name?: string | null
-  site: number | null
-  site_name?: string | null
+  location: number | null
+  location_name?: string | null
   code: string
   name: string
-  id: string
-  company_name: string
-  branch_name: string
-  site_name: string
   created_at: string
   updated_at: string
 }
@@ -22,7 +18,7 @@ export type DivisionPayload = {
   is_active: boolean
   company: number | null
   branch: number | null
-  site: number | null
+  location: number | null
   code: string
   name: string
 }

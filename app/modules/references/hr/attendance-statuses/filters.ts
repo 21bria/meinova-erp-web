@@ -4,6 +4,7 @@ export const attendanceStatusesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search attendanceStatuses...",
+    placeholderKey: "references.hr.attendance-statuses.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const attendanceStatusesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.attendance-statuses.filters.is_active",
   }),
   ],
 })

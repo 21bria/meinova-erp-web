@@ -4,6 +4,7 @@ export const rejectionReasonsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search rejectionReasons...",
+    placeholderKey: "references.hr.rejection-reasons.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const rejectionReasonsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.rejection-reasons.filters.is_active",
   }),
   ],
 })

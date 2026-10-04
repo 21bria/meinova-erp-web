@@ -4,6 +4,7 @@ export const terminationReasonsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search terminationReasons...",
+    placeholderKey: "references.hr.termination-reasons.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const terminationReasonsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.termination-reasons.filters.is_active",
   }),
   ],
 })

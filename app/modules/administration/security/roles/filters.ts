@@ -1,15 +1,21 @@
 import { createFilters, filter } from "@framework"
 
-export const roleFilters = createFilters({
+export const rolesFilters = createFilters({
   search: {
     enabled: true,
-    placeholder: "Search role...",
+    placeholder: "Search roles...",
+    placeholderKey: "administration.security.roles.placeholder.search",
   },
-  advanced: false,
+
+  advanced: true,
+
   items: [
-    filter.select("is_active", "Status", [
-      { label: "Active", value: "true" },
-      { label: "Inactive", value: "false" },
-    ], { placement: "quick" })
+  filter.select("is_active", "Is active", [
+    { label: "Active", value: "true" },
+    { label: "Inactive", value: "false" },
+  ], {
+    placement: "quick",
+    labelKey: "administration.security.roles.filters.is_active",
+  }),
   ],
 })

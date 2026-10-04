@@ -4,6 +4,7 @@ export const interviewTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search interviewTypes...",
+    placeholderKey: "references.hr.interview-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const interviewTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.interview-types.filters.is_active",
   }),
   ],
 })

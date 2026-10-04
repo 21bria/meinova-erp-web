@@ -1,9 +1,15 @@
+import type { CrudConfig } from "@framework"
 
-import type { MasterTableConfig } from "@/types/table"
-
-export const roleConfig: MasterTableConfig = {
-  id: "master-role",
+export const rolesConfig: CrudConfig = {
+  id: "roles",
   endpoint: "/api/accounts/roles/",
   defaultQuery: {},
+  ui: {
+  create: true,
+  edit: true,
+  delete: true,
+  bulk_delete: false,
+  import: false,
+  export: false,
+},
 }
-

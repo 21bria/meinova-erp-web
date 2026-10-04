@@ -3,9 +3,11 @@ export type CitiesRow = {
   is_active: boolean
   code: string
   name: string
+  aid: string
   province: number | null
   province_name?: string | null
-  id: string
+  province_aid: string
+  country_name: string
   created_at: string
   updated_at: string
   is_deleted: string
@@ -20,6 +22,7 @@ export type CitiesPayload = {
   is_active: boolean
   code: string
   name: string
+  aid: string
   province: number | null
   is_deleted: string
   deleted_at: string

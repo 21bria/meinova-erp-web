@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import Company from './company/page.vue'
 import Branch from './branch/page.vue'
-import Site from './site/page.vue'
+import Location from './location/page.vue'
+import Facility from './facility/page.vue'
 import Department from './department/page.vue'
 import Divisions from './division/page.vue'
 import Section from './section/page.vue'
@@ -11,7 +12,8 @@ import CostCenter from './cost-center/page.vue'
 const tabs = [
     { value: 'companies', label: 'Companies' },
     { value: 'branches', label: 'Branches' },
-    { value: 'site', label: 'Sites' },
+    { value: 'location', label: 'Locations' },
+    { value: 'facility', label: 'Facilities' },
     { value: 'divisions', label: 'Divisions' },
     { value: 'departments', label: 'Departments' },
     { value: 'sections', label: 'Sections' },
@@ -50,8 +52,17 @@ const tabs = [
                 <Branch/>
             </TabsContent>
             
-            <TabsContent value="site">
-                <Site/>
+            <TabsContent value="location">
+                <Location/>
+            </TabsContent>
+
+            <!--
+              Facility duduk tepat di sebelah Location, dan itu
+              disengaja: keduanya paling sering tertukar. Location =
+              tempat orang ditempatkan; Facility = bangunan di dalamnya.
+            -->
+            <TabsContent value="facility">
+                <Facility/>
             </TabsContent>
 
             <TabsContent value="divisions">

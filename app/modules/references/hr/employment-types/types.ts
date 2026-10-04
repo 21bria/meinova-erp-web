@@ -5,7 +5,7 @@ export type EmploymentTypesRow = {
   name: string
   description: string
   sort_order: string
-  id: string
+  requires_contract: boolean
   created_at: string
   updated_at: string
   is_deleted: string
@@ -22,6 +22,7 @@ export type EmploymentTypesPayload = {
   name: string
   description: string
   sort_order: string
+  requires_contract: boolean
   is_deleted: string
   deleted_at: string
   created_by: string

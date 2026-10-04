@@ -4,6 +4,7 @@ export const countriesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search countries...",
+    placeholderKey: "references.geography.countries.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const countriesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.geography.countries.filters.is_active",
   }),
   ],
 })

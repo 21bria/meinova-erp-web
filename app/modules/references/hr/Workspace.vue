@@ -42,8 +42,13 @@ import Grade from "./grades/page.vue"
 // -----------------------------------------------------------------------------
 
 import ShiftGroup from "./shift-groups/page.vue"
+import Shift from "./shifts/page.vue"
+import WorkSchedule from "./work-schedules/page.vue"
 import LeaveType from "./leave-types/page.vue"
 import LeaveReason from "./leave-reasons/page.vue"
+import RotationPurpose from "./rotation-purposes/page.vue"
+import VisitPurpose from "./visit-purposes/page.vue"
+import VisitType from "./visit-types/page.vue"
 import AttendanceStatus from "./attendance-statuses/page.vue"
 import OvertimeType from "./overtime-types/page.vue"
 
@@ -232,6 +237,22 @@ const groups: ReferenceGroup[] = [
         label: "Shift Group",
         component: ShiftGroup,
       },
+      // Shift dan Work Schedule sudah lama punya module hasil generate
+      // dan endpoint yang jalan, tapi tidak pernah didaftarkan di sini —
+      // jadi jam kerja yang menentukan seluruh perhitungan
+      // keterlambatan tidak bisa dilihat, apalagi diubah, dari layar
+      // mana pun. Yang tampak cuma Shift Group-nya, yang justru tidak
+      // menyimpan jam sama sekali.
+      {
+        value: "shifts",
+        label: "Shift",
+        component: Shift,
+      },
+      {
+        value: "work-schedules",
+        label: "Work Schedule",
+        component: WorkSchedule,
+      },
       {
         value: "leave-types",
         label: "Leave Type",
@@ -241,6 +262,11 @@ const groups: ReferenceGroup[] = [
         value: "leave-reasons",
         label: "Leave Reason",
         component: LeaveReason,
+      },
+      {
+        value: "rotation-purposes",
+        label: "Rotation Purpose",
+        component: RotationPurpose,
       },
       {
         value: "attendance-statuses",
@@ -421,16 +447,76 @@ const groups: ReferenceGroup[] = [
       },
     ],
   },
+
+  // Grup tersendiri, tidak dititipkan ke "Roster & Travel" maupun
+  // "Employment". Keduanya master milik modul Visitor Management, dan
+  // menaruhnya di grup yang isinya master pegawai membuat orang yang
+  // mencarinya harus menebak dulu — daftar alasan kunjungan tamu bukan
+  // data kepegawaian.
+  {
+    value: "visitor",
+    label: "Visitor",
+    items: [
+      {
+        value: "visit-purposes",
+        label: "Visit Purpose",
+        component: VisitPurpose,
+      },
+      {
+        value: "visit-types",
+        label: "Visit Type",
+        component: VisitType,
+      },
+    ],
+  },
 ]
 
 const firstGroup = groups[0]!
 
+/*
+| Tab awal boleh ditunjuk dari URL: `?group=attendance&item=leave-types`.
+|
+| Dipakai kartu di HR Master Hub. Tanpa ini kartunya cuma bisa membuka
+| halaman referensi di tab pertama, dan orang tetap harus mencari
+| sendiri referensi yang dimaksud di antara lima puluh tab — persis
+| pekerjaan yang hub itu hilangkan.
+|
+| Nilai yang tidak dikenal diabaikan, bukan dibiarkan mengosongkan
+| layar: satu salah ketik di URL tidak boleh menghasilkan halaman
+| kosong tanpa penjelasan.
+*/
+const route = useRoute()
+
+function resolveInitialGroup(): ReferenceGroup["value"] {
+  const requested = String(route.query.group ?? "")
+
+  return (
+    groups.find(group => group.value === requested)?.value
+    ?? firstGroup.value
+  )
+}
+
+function resolveInitialItem(
+  groupValue: ReferenceGroup["value"],
+): string {
+  const group =
+    groups.find(item => item.value === groupValue) ?? firstGroup
+
+  const requested = String(route.query.item ?? "")
+
+  return (
+    group.items.find(item => item.value === requested)?.value
+    ?? group.items[0]?.value
+    ?? ""
+  )
+}
+
 const activeGroup = ref<ReferenceGroup["value"]>(
-  firstGroup.value,
+  resolveInitialGroup(),
 )
 
 const activeTab = ref(
-  firstGroup.items[0]?.value ?? "",
+  resolveInitialItem(activeGroup.value),
 )
 
 const currentGroup = computed<ReferenceGroup>(() => {

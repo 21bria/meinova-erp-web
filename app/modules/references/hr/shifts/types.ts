@@ -12,8 +12,6 @@ export type ShiftsRow = {
   break_start_time: string
   break_end_time: string
   crosses_midnight: boolean
-  id: string
-  shift_group_name: string
   created_at: string
   updated_at: string
   is_deleted: string

@@ -2,12 +2,14 @@ import { createForm, field } from "@framework"
 
 export const sectionForm = createForm([
   field.lookup("company", "Company", "/api/administration/organization/lookup/companies/", {
+      "labelKey": "administration.organization.section.fields.company",
       "required": true,
       "tab": "general",
       "order": 10
     }),
 
-  field.lookup("site", "Site", "/api/administration/organization/lookup/sites/", {
+  field.lookup("location", "Location", "/api/administration/organization/lookup/locations/", {
+      "labelKey": "administration.organization.section.fields.location",
       "required": true,
       "dependsOn": "company",
       "lookupParams": {
@@ -18,19 +20,24 @@ export const sectionForm = createForm([
     }),
 
   field.lookup("division", "Division", "/api/administration/organization/lookup/divisions/", {
+      "labelKey": "administration.organization.section.fields.division",
       "required": true,
-      "dependsOn": "site",
+      "dependsOn": "company",
       "lookupParams": {
-        "site_id": "$site"
+        "company_id": "$company",
+        "location_id": "$location"
       },
       "tab": "general",
       "order": 30
     }),
 
   field.lookup("department", "Department", "/api/administration/organization/lookup/departments/", {
+      "labelKey": "administration.organization.section.fields.department",
       "required": true,
-      "dependsOn": "division",
+      "dependsOn": "company",
       "lookupParams": {
+        "company_id": "$company",
+        "location_id": "$location",
         "division_id": "$division"
       },
       "tab": "general",
@@ -38,6 +45,7 @@ export const sectionForm = createForm([
     }),
 
   field.text("code", "Section Code", {
+      "labelKey": "administration.organization.section.fields.code",
       "required": true,
       "placeholder": "e.g. MINE",
       "tab": "general",
@@ -45,6 +53,7 @@ export const sectionForm = createForm([
     }),
 
   field.text("name", "Section Name", {
+      "labelKey": "administration.organization.section.fields.name",
       "required": true,
       "placeholder": "e.g. Mine Operation",
       "tab": "general",
@@ -52,6 +61,8 @@ export const sectionForm = createForm([
     }),
 
   field.switch("is_active", "Active", {
+      "labelKey": "administration.organization.section.fields.is_active",
+      "default": true,
       "tab": "general",
       "order": 999
     }),

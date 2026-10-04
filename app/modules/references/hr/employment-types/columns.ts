@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { EmploymentTypesRow } from "./types"
 
@@ -32,10 +32,11 @@ export function getEmploymentTypesColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("sort_order", "Sort order"),
+      column.status("is_active", resourceLabel("references.hr.employment-types.fields.is_active", "Active")),
+      column.text("code", resourceLabel("references.hr.employment-types.fields.code", "Code")),
+      column.text("name", resourceLabel("references.hr.employment-types.fields.name", "Name")),
+      column.text("sort_order", resourceLabel("references.hr.employment-types.fields.sort_order", "Sort order")),
+      column.status("requires_contract", resourceLabel("references.hr.employment-types.fields.requires_contract", "Requires contract")),
     ],
   })
 }

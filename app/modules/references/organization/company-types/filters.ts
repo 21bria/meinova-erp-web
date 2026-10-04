@@ -4,6 +4,7 @@ export const companyTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search companyTypes...",
+    placeholderKey: "references.organization.company-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const companyTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.organization.company-types.filters.is_active",
   }),
   ],
 })

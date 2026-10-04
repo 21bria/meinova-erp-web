@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { ProvincesRow } from "./types"
 
@@ -32,10 +32,11 @@ export function getProvincesColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("country_name", "Country"),
+      column.status("is_active", resourceLabel("references.geography.provinces.fields.is_active", "Active")),
+      column.text("code", resourceLabel("references.geography.provinces.fields.code", "Code")),
+      column.text("name", resourceLabel("references.geography.provinces.fields.name", "Name")),
+      column.text("aid", resourceLabel("references.geography.provinces.fields.aid", "Area ID")),
+      column.text("country_name", resourceLabel("references.geography.provinces.fields.country", "Country")),
     ],
   })
 }

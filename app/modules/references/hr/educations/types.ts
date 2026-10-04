@@ -6,7 +6,6 @@ export type EducationsRow = {
   description: string
   sort_order: string
   level: string
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string

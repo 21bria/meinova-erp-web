@@ -13,7 +13,6 @@ export type WorkSchedulesRow = {
   cycle_off_days: string
   is_flexible: boolean
   crosses_midnight: boolean
-  id: string
   schedule_days: string
   schedule_type_name: string
   created_at: string

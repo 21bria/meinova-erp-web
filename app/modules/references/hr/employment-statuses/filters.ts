@@ -4,6 +4,7 @@ export const employmentStatusesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search employmentStatuses...",
+    placeholderKey: "references.hr.employment-statuses.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const employmentStatusesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.employment-statuses.filters.is_active",
   }),
   ],
 })

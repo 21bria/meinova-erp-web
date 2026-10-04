@@ -4,6 +4,7 @@ export const studyFieldsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search studyFields...",
+    placeholderKey: "references.hr.study-fields.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const studyFieldsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.study-fields.filters.is_active",
   }),
   ],
 })

@@ -4,6 +4,7 @@ export const degreesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search degrees...",
+    placeholderKey: "references.hr.degrees.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const degreesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.degrees.filters.is_active",
   }),
   ],
 })

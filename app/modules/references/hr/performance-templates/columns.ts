@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { PerformanceTemplatesRow } from "./types"
 
@@ -32,10 +32,10 @@ export function getPerformanceTemplatesColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("sort_order", "Sort order"),
+      column.status("is_active", resourceLabel("references.hr.performance-templates.fields.is_active", "Active")),
+      column.text("code", resourceLabel("references.hr.performance-templates.fields.code", "Code")),
+      column.text("name", resourceLabel("references.hr.performance-templates.fields.name", "Name")),
+      column.text("sort_order", resourceLabel("references.hr.performance-templates.fields.sort_order", "Sort order")),
     ],
   })
 }

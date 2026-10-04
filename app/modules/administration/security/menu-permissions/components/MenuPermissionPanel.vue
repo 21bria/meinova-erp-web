@@ -6,10 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import LookupSelect from "@/components/forms/LookupSelect.vue"
 
+// Wajib diimpor. Auto-import Nuxt hanya mencakup `app/components/` dan
+// direktori framework yang didaftarkan di `nuxt.config`; komponen di
+// bawah `app/modules/**` tidak ikut. Tanpa baris ini `<MenuTreeNode>`
+// tidak tersedia dan seluruh pohon **tidak dirender sama sekali** —
+// datanya termuat ("Selected: 11") tapi layarnya kosong.
+import MenuTreeNode from "./MenuTreeNode.vue"
+
 import { useApi } from "@/composables/useApi"
 import { useNotify } from "@/composables/useNotify"
 import { menuPermissionConfig } from "../table"
 import type { MenuTreeItem } from "../types"
+import { apiErrorMessage } from "@framework"
 
 const { request } = useApi()
 const notify = useNotify()
@@ -90,7 +98,7 @@ async function loadTree() {
 
     expandAll()
   } catch (e: any) {
-    notify.error(e?.data?.detail || e?.message || "Failed to load menu permissions")
+    notify.error(apiErrorMessage(e, "Gagal memuat menu permission."))
   } finally {
     loading.value = false
   }
@@ -112,7 +120,7 @@ async function save() {
 
     notify.success("Menu permissions saved")
   } catch (e: any) {
-    notify.error(e?.data?.detail || e?.message || "Failed to save menu permissions")
+    notify.error(apiErrorMessage(e, "Gagal menyimpan menu permission."))
   } finally {
     saving.value = false
   }
@@ -129,13 +137,22 @@ watch(role, () => {
     <div class="flex items-end justify-between gap-4">
       <div class="grid w-full max-w-md gap-2">
         <label class="text-sm font-medium">Role</label>
+        <!--
+          Endpoint lookup, bukan `/api/accounts/roles/`.
+
+          Yang terakhir adalah CRUD dan membalas envelope
+          `{success, message, data: [...]}`, sementara `LookupSelect`
+          membaca `results` di tingkat teratas. Hasilnya dropdown yang
+          selalu kosong — tanpa error, tanpa spinner, tanpa apa pun yang
+          menunjukkan ada yang salah.
+        -->
         <LookupSelect
           v-model="role"
           label="Role"
-          endpoint="/api/accounts/roles/"
+          endpoint="/api/accounts/lookup/roles/"
           variant="field"
-          label-key="name"
-          value-key="id"
+          label-key="label"
+          value-key="value"
         />
       </div>
 

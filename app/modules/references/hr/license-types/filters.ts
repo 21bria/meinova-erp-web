@@ -4,6 +4,7 @@ export const licenseTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search licenseTypes...",
+    placeholderKey: "references.hr.license-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const licenseTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.license-types.filters.is_active",
   }),
   ],
 })

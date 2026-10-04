@@ -2,8 +2,8 @@ export type AuditTrailRow = {
   id: number
   company: number | null
   company_name?: string | null
-  site: number | null
-  site_name?: string | null
+  location: number | null
+  location_name?: string | null
   user: number | null
   user_name?: string | null
   action: string
@@ -15,14 +15,13 @@ export type AuditTrailRow = {
   after: string
   ip_address: string
   user_agent: string
-  id: string
   created_at: string
 }
 
 export type AuditTrailPayload = {
   id?: number
   company: number | null
-  site: number | null
+  location: number | null
   user: number | null
   action: string
   module: string

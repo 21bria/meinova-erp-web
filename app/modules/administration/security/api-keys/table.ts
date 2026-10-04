@@ -1,10 +1,15 @@
+import type { CrudConfig } from "@framework"
 
-import type { MasterTableConfig } from "@/types/table"
-
-
-// api-keys/table.ts
-export const apiKeyConfigg: MasterTableConfig = {
-  id: "accounts-api-key",
-  endpoint: "/api/accounts/api-keys/",
+export const apiKeysConfig: CrudConfig = {
+  id: "apiKeys",
+  endpoint: "/api/administration/security/api-keys/",
   defaultQuery: {},
+  ui: {
+  create: true,
+  edit: true,
+  delete: true,
+  bulk_delete: false,
+  import: false,
+  export: false,
+},
 }

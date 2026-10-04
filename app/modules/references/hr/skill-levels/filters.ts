@@ -4,6 +4,7 @@ export const skillLevelsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search skillLevels...",
+    placeholderKey: "references.hr.skill-levels.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const skillLevelsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.skill-levels.filters.is_active",
   }),
   ],
 })

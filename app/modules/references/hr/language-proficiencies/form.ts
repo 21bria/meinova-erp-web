@@ -2,6 +2,7 @@ import { createForm, field } from "@framework"
 
 export const languageProficienciesForm = createForm([
   field.text("code", "Code", {
+      "labelKey": "references.hr.language-proficiencies.fields.code",
       "required": true,
       "placeholder": "e.g. CODE",
       "tab": "general",
@@ -9,6 +10,7 @@ export const languageProficienciesForm = createForm([
     }),
 
   field.text("name", "Name", {
+      "labelKey": "references.hr.language-proficiencies.fields.name",
       "required": true,
       "placeholder": "Name",
       "tab": "general",
@@ -16,17 +18,23 @@ export const languageProficienciesForm = createForm([
     }),
 
   field.textarea("description", "Description", {
+      "labelKey": "references.hr.language-proficiencies.fields.description",
+      "default": "",
       "rows": 4,
       "layout": "full",
       "tab": "general",
       "order": 30
     }),
 
-  field.text("sort_order", "Sort order", {
+  field.number("sort_order", "Sort order", {
+      "labelKey": "references.hr.language-proficiencies.fields.sort_order",
+      "default": 0,
       "tab": "general"
     }),
 
   field.switch("is_active", "Active", {
+      "labelKey": "references.hr.language-proficiencies.fields.is_active",
+      "default": true,
       "tab": "general",
       "order": 999
     }),

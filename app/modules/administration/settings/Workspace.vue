@@ -1,13 +1,26 @@
 <script setup lang="ts">
-import TenantSetting from "./tenant-setting/page.vue"
+/**
+ * Tiga tab, dua bentuk yang berbeda — dan itu bukan inkonsistensi.
+ *
+ * Tenant Setting dan Print Setting keduanya `OneToOneField(company)`:
+ * tenant berisi dua belas perusahaan seharusnya punya dua belas baris
+ * masing-masing. Tab-nya dulu menyunting **satu** record yang diambil
+ * `.first()` — perusahaan mana yang tersunting ditentukan urutan id, dan
+ * sebelas sisanya tidak punya jalan masuk sama sekali. Sekarang keduanya
+ * tabel + tombol Add.
+ *
+ * System Setting memang satu baris per tenant (key/value global), jadi
+ * tetap satu form.
+ */
+import TenantSettings from "./tenant-settings/page.vue"
 import SystemSetting from "./system-setting/page.vue"
-import PrintSetting from "./print-setting/page.vue"
+import PrintSettings from "./print-settings/page.vue"
 
 
 const tabs = [
-  { value: 'tenant-setting', label: 'Tenant Settings', component: TenantSetting },
+  { value: 'tenant-settings', label: 'Tenant Settings', component: TenantSettings },
   { value: 'system-setting', label: 'System Settings', component: SystemSetting },
-  { value: 'print-setting', label: 'Print Settings', component: PrintSetting },
+  { value: 'print-settings', label: 'Print Settings', component: PrintSettings },
 ]
 </script>
 
@@ -23,7 +36,7 @@ const tabs = [
       </p>
     </section>
 
-    <Tabs default-value="tenant-setting" class="w-full">
+    <Tabs default-value="tenant-settings" class="w-full">
       <div class="mb-6 overflow-x-auto border-b">
         <TabsList class="inline-flex h-auto w-auto justify-start bg-transparent p-0">
           <TabsTrigger

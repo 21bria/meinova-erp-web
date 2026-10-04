@@ -4,6 +4,7 @@ export const banksFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search banks...",
+    placeholderKey: "references.bank.banks.placeholder.search",
   },
 
   advanced: true,
@@ -14,9 +15,8 @@ export const banksFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.bank.banks.filters.is_active",
   }),
-  filter.lookup("country", "Country", null, {
-    placement: "advanced",
-  }),
+  // Dilewati (lookup tanpa endpoint, dropdown-nya akan selalu kosong): country
   ],
 })

@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { PositionRow } from "./types"
 
@@ -32,28 +32,20 @@ export function getPositionColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("company_name", "Company"),
-      column.text("branch_name", "Branch"),
-      column.text("site_name", "Site"),
-      column.text("division_name", "Division"),
-      column.text("department_name", "Department"),
-      column.text("section_name", "Section"),
-      column.text("job_category_name", "Job Category"),
-      column.text("job_level_name", "Job Level"),
-      column.text("reports_to_name", "Reports to"),
-      column.text("code", "Position Code"),
-      column.text("name", "Position Name"),
-      column.text("headcount", "Headcount"),
-      column.status("is_manager", "Is manager"),
-      column.text("company_name", "Company name"),
-      column.text("branch_name", "Branch name"),
-      column.text("site_name", "Site name"),
-      column.text("division_name", "Division name"),
-      column.text("department_name", "Department name"),
-      column.text("section_name", "Section name"),
-      column.text("job_category_name", "Job category name"),
-      column.text("job_level_name", "Job level name"),
+      column.status("is_active", resourceLabel("administration.organization.position.fields.is_active", "Active")),
+      column.text("company_name", resourceLabel("administration.organization.position.fields.company", "Company")),
+      column.text("branch_name", resourceLabel("administration.organization.position.fields.branch", "Branch")),
+      column.text("location_name", resourceLabel("administration.organization.position.fields.location", "Location")),
+      column.text("division_name", resourceLabel("administration.organization.position.fields.division", "Division")),
+      column.text("department_name", resourceLabel("administration.organization.position.fields.department", "Department")),
+      column.text("section_name", resourceLabel("administration.organization.position.fields.section", "Section")),
+      column.text("job_category_name", resourceLabel("administration.organization.position.fields.job_category", "Job Category")),
+      column.text("job_level_name", resourceLabel("administration.organization.position.fields.job_level", "Job Level")),
+      column.text("reports_to_name", resourceLabel("administration.organization.position.fields.reports_to", "Reports to")),
+      column.text("code", resourceLabel("administration.organization.position.fields.code", "Position Code")),
+      column.text("name", resourceLabel("administration.organization.position.fields.name", "Position Name")),
+      column.text("headcount", resourceLabel("administration.organization.position.fields.headcount", "Headcount")),
+      column.status("is_manager", resourceLabel("administration.organization.position.fields.is_manager", "Is manager")),
     ],
   })
 }

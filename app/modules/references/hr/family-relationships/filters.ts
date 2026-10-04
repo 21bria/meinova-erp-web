@@ -4,6 +4,7 @@ export const familyRelationshipsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search familyRelationships...",
+    placeholderKey: "references.hr.family-relationships.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const familyRelationshipsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.family-relationships.filters.is_active",
   }),
   ],
 })

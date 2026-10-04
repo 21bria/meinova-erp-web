@@ -4,6 +4,7 @@ export const exitClearanceStatusesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search exitClearanceStatuses...",
+    placeholderKey: "references.hr.exit-clearance-statuses.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const exitClearanceStatusesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.exit-clearance-statuses.filters.is_active",
   }),
   ],
 })

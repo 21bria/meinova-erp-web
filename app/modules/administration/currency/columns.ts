@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { CurrencyRow } from "./types"
 
@@ -32,12 +32,12 @@ export function getCurrencyColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Is active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("symbol", "Symbol"),
-      column.text("decimal_places", "Decimal places"),
-      column.status("is_base_currency", "Is base currency"),
+      column.status("is_active", resourceLabel("administration.currency.fields.is_active", "Is active")),
+      column.text("code", resourceLabel("administration.currency.fields.code", "Code")),
+      column.text("name", resourceLabel("administration.currency.fields.name", "Name")),
+      column.text("symbol", resourceLabel("administration.currency.fields.symbol", "Symbol")),
+      column.text("decimal_places", resourceLabel("administration.currency.fields.decimal_places", "Decimal places")),
+      column.status("is_base_currency", resourceLabel("administration.currency.fields.is_base_currency", "Is base currency")),
     ],
   })
 }

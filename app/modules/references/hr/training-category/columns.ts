@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { TrainingCategoryRow } from "./types"
 
@@ -32,10 +32,10 @@ export function getTrainingCategoryColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("sort_order", "Sort order"),
+      column.status("is_active", resourceLabel("references.hr.training-category.fields.is_active", "Active")),
+      column.text("code", resourceLabel("references.hr.training-category.fields.code", "Code")),
+      column.text("name", resourceLabel("references.hr.training-category.fields.name", "Name")),
+      column.text("sort_order", resourceLabel("references.hr.training-category.fields.sort_order", "Sort order")),
     ],
   })
 }

@@ -4,6 +4,7 @@ export const currencyFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search currency...",
+    placeholderKey: "administration.currency.placeholder.search",
   },
 
   advanced: true,
@@ -14,12 +15,14 @@ export const currencyFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "administration.currency.filters.is_active",
   }),
   filter.select("is_base_currency", "Is base currency", [
     { label: "Active", value: "true" },
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "administration.currency.filters.is_base_currency",
   }),
   ],
 })

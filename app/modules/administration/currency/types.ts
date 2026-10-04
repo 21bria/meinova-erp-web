@@ -6,7 +6,6 @@ export type CurrencyRow = {
   symbol: string
   decimal_places: string
   is_base_currency: boolean
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string

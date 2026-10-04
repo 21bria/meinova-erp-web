@@ -4,6 +4,7 @@ export const recruitmentSourcesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search recruitmentSources...",
+    placeholderKey: "references.hr.recruitment-sources.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const recruitmentSourcesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.recruitment-sources.filters.is_active",
   }),
   ],
 })

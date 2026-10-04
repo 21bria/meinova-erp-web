@@ -4,6 +4,7 @@ export const gendersFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search genders...",
+    placeholderKey: "references.hr.genders.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const gendersFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.genders.filters.is_active",
   }),
   ],
 })

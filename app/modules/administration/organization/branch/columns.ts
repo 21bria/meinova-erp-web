@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { BranchRow } from "./types"
 
@@ -32,18 +32,17 @@ export function getBranchColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("company_name", "Company"),
-      column.text("code", "Branch Code"),
-      column.text("name", "Branch Name"),
-      column.text("country_name", "Country"),
-      column.text("province_name", "Province"),
-      column.text("city_name", "City"),
-      column.text("postal_code", "Postal code"),
-      column.text("phone", "Phone"),
-      column.text("email", "Email"),
-      column.text("website", "Website"),
-      column.text("company_name", "Company name"),
+      column.status("is_active", resourceLabel("administration.organization.branch.fields.is_active", "Active")),
+      column.text("company_name", resourceLabel("administration.organization.branch.fields.company", "Company")),
+      column.text("code", resourceLabel("administration.organization.branch.fields.code", "Branch Code")),
+      column.text("name", resourceLabel("administration.organization.branch.fields.name", "Branch Name")),
+      column.text("country_name", resourceLabel("administration.organization.branch.fields.country", "Country")),
+      column.text("province_name", resourceLabel("administration.organization.branch.fields.province", "Province")),
+      column.text("city_name", resourceLabel("administration.organization.branch.fields.city", "City")),
+      column.text("postal_code", resourceLabel("administration.organization.branch.fields.postal_code", "Postal code")),
+      column.text("phone", resourceLabel("administration.organization.branch.fields.phone", "Phone")),
+      column.text("email", resourceLabel("administration.organization.branch.fields.email", "Email")),
+      column.text("website", resourceLabel("administration.organization.branch.fields.website", "Website")),
     ],
   })
 }

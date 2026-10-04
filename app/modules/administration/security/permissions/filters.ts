@@ -1,22 +1,15 @@
 import { createFilters, filter } from "@framework"
 
-export const permissionFilters = createFilters({
+export const permissionsFilters = createFilters({
   search: {
     enabled: true,
-    placeholder: "Search permission...",
+    placeholder: "Search permissions...",
+    placeholderKey: "administration.security.permissions.placeholder.search",
   },
 
   advanced: true,
 
   items: [
-    filter.text("module", "Module", {
-      placement: "quick",
-      placeholder: "Module",
-    }),
 
-    filter.text("model", "Model", {
-      placement: "advanced",
-      placeholder: "Model",
-    }),
   ],
 })

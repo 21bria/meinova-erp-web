@@ -4,6 +4,7 @@ export const nationalitiesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search nationalities...",
+    placeholderKey: "references.hr.nationalities.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const nationalitiesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.nationalities.filters.is_active",
   }),
   ],
 })

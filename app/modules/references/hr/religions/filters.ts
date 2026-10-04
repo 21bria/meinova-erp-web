@@ -4,6 +4,7 @@ export const religionsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search religions...",
+    placeholderKey: "references.hr.religions.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const religionsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.religions.filters.is_active",
   }),
   ],
 })

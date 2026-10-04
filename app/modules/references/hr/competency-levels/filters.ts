@@ -4,6 +4,7 @@ export const competencyLevelsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search competencyLevels...",
+    placeholderKey: "references.hr.competency-levels.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const competencyLevelsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.competency-levels.filters.is_active",
   }),
   ],
 })

@@ -4,6 +4,7 @@ export const shiftGroupsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search shiftGroups...",
+    placeholderKey: "references.hr.shift-groups.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const shiftGroupsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.shift-groups.filters.is_active",
   }),
   ],
 })

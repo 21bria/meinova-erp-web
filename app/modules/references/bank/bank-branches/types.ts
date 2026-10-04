@@ -13,7 +13,6 @@ export type BankBranchesRow = {
   bank_name?: string | null
   city: number | null
   city_name?: string | null
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string

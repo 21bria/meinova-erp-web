@@ -4,6 +4,8 @@ import { computed, ref, type Component } from "vue"
 import Countries from "./countries/page.vue"
 import Provinces from "./provinces/page.vue"
 import Cities from "./cities/page.vue"
+import Districts from "./districts/page.vue"
+import Villages from "./villages/page.vue"
 
 type ReferenceItem = {
   value: string
@@ -11,10 +13,22 @@ type ReferenceItem = {
   component: Component
 }
 
+// Urutannya = hierarkinya: Country -> Province -> Kabupaten/Kota ->
+// Kecamatan -> Kelurahan/Desa. Tiap tingkat punya tabel, pencarian, dan
+// filternya sendiri; sengaja **tidak** dilebur jadi satu tabel
+// bertingkat — pencarian yang mengembalikan provinsi dan kelurahan
+// berjejer tidak bisa dibedakan lagi oleh yang membacanya.
+//
+// Labelnya memakai istilah Indonesia untuk tiga tingkat terakhir karena
+// itu nama resminya di dokumen Kemendagri, dan tidak ada padanan Inggris
+// yang dikenali penggunanya ("Regency/City" tidak pernah dipakai siapa
+// pun di sini).
 const items: ReferenceItem[] = [
   { value: "country", label: "Country", component: Countries },
   { value: "province", label: "Province", component: Provinces },
-  { value: "city", label: "City", component: Cities },
+  { value: "city", label: "Kabupaten/Kota", component: Cities },
+  { value: "district", label: "Kecamatan", component: Districts },
+  { value: "village", label: "Kelurahan/Desa", component: Villages },
 ]
 
 const activeTab = ref(items[0]?.value ?? "")

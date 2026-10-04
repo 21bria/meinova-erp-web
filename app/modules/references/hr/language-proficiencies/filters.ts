@@ -4,6 +4,7 @@ export const languageProficienciesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search languageProficiencies...",
+    placeholderKey: "references.hr.language-proficiencies.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const languageProficienciesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.language-proficiencies.filters.is_active",
   }),
   ],
 })

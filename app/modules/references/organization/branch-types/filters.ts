@@ -4,6 +4,7 @@ export const branchTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search branchTypes...",
+    placeholderKey: "references.organization.branch-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const branchTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.organization.branch-types.filters.is_active",
   }),
   ],
 })

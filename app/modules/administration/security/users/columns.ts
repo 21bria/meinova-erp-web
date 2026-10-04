@@ -1,62 +1,47 @@
 import type { ColumnDef } from "@tanstack/vue-table"
-
 import type { UserRole } from "@/utils/roles"
+import { column, createColumns, resourceLabel } from "@framework"
 
-import { column, createColumns } from "@framework"
-
-export type UserRow = {
-  id: number
-  username: string
-  email?: string | null
-  first_name?: string | null
-  last_name?: string | null
-  is_active: boolean
-  is_staff?: boolean
-}
+import type { UsersRow } from "./types"
 
 type ColumnActions = {
-  onEdit: (row: UserRow) => void
-  onDelete: (row: UserRow) => void
+  onEdit?: (row: UsersRow) => void
+  onDelete?: (row: UsersRow) => void
 }
 
 type ColumnOptions = {
   role?: UserRole
 }
 
-export function getUserColumns(
-
-  actions: ColumnActions,
-
+export function getUsersColumns(
+  actions: ColumnActions = {},
   opts: ColumnOptions = {},
+): ColumnDef<UsersRow>[] {
+  const role = opts.role ?? "SITE_USER"
 
-): ColumnDef<UserRow>[] {
+  const canMutateByRole =
+    role !== "GLOBAL_VIEWER"
+    && role !== "VIEWER"
 
-  const role = opts.role ?? "USER"
+  const canMutate =
+    canMutateByRole
+    && Boolean(actions.onEdit || actions.onDelete)
 
-  const canMutate = role !== "VIEWER"
-
-  return createColumns<UserRow>({
-
-    selectable: true,
-
+  return createColumns<UsersRow>({
+    selectable: canMutate,
     canMutate,
-
     actions,
-
     items: [
-
-      column.text("username", "Username"),
-
-      column.text("email", "Email"),
-
-      column.text("first_name", "First Name"),
-
-      column.text("last_name", "Last Name"),
-
-      column.status("is_active"),
-
+      column.datetime("last_login", resourceLabel("administration.security.users.fields.last_login", "Last Login")),
+      column.status("is_superuser", resourceLabel("administration.security.users.fields.is_superuser", "Superuser")),
+      column.text("username", resourceLabel("administration.security.users.fields.username", "Username")),
+      column.text("first_name", resourceLabel("administration.security.users.fields.first_name", "First name")),
+      column.text("last_name", resourceLabel("administration.security.users.fields.last_name", "Last name")),
+      column.status("is_active", resourceLabel("administration.security.users.fields.is_active", "Active")),
+      column.text("email", resourceLabel("administration.security.users.fields.email", "Email")),
+      column.text("language", resourceLabel("administration.security.users.fields.language", "language")),
+      column.text("full_name", resourceLabel("administration.security.users.fields.full_name", "Name")),
+      column.text("role_names", resourceLabel("administration.security.users.fields.role_names", "Roles")),
     ],
-
   })
-
 }

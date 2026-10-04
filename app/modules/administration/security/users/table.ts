@@ -1,8 +1,15 @@
+import type { CrudConfig } from "@framework"
 
-import type { MasterTableConfig } from "@/types/table"
-
-export const userConfig: MasterTableConfig = {
-  id: "master-user",
+export const usersConfig: CrudConfig = {
+  id: "users",
   endpoint: "/api/accounts/users/",
   defaultQuery: {},
+  ui: {
+  create: true,
+  edit: true,
+  delete: true,
+  bulk_delete: false,
+  import: false,
+  export: false,
+},
 }

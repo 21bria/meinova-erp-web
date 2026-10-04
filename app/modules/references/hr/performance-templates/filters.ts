@@ -4,6 +4,7 @@ export const performanceTemplatesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search performanceTemplates...",
+    placeholderKey: "references.hr.performance-templates.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const performanceTemplatesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.performance-templates.filters.is_active",
   }),
   ],
 })

@@ -4,6 +4,7 @@ export const leaveTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search leaveTypes...",
+    placeholderKey: "references.hr.leave-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const leaveTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.leave-types.filters.is_active",
   }),
   ],
 })

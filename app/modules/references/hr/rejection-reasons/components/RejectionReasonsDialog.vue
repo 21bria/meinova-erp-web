@@ -6,9 +6,11 @@ import { computed, ref, watch } from "vue"
 import {
   MFormBuilder,
   MFormDialog,
+  MRecordActions,
 } from "@framework"
 
 import { rejectionReasonsForm } from "../form"
+import { rejectionReasonsRecordActions } from "../actions"
 import type { RejectionReasonsPayload } from "../types"
 
 type UserRole = "SYSTEM" | "MANAGEMENT" | "GLOBAL_VIEWER" | "VIEWER" | "SITE_USER"
@@ -25,7 +27,21 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "update:open", value: boolean): void
   (e: "submit", payload: RejectionReasonsPayload): void
+  (e: "refresh"): void
 }>()
+
+/*
+ * Record action pada editor berdialog.
+ *
+ * Hanya di mode edit: seluruhnya menembak endpoint `{id}`, dan record
+ * yang belum tersimpan tidak punya id. Sumber recordnya `props.initial`
+ * (nilai dari server), bukan `local` — `visible_when` menilai keadaan
+ * yang **tersimpan**, dan mengubah satu field di form tidak boleh
+ * memunculkan tombol yang endpointnya belum sah untuk keadaan itu.
+ */
+const recordActions = computed(() =>
+  props.mode === "edit" ? rejectionReasonsRecordActions : [],
+)
 
 const canMutate = computed(() => props.role !== "GLOBAL_VIEWER" && props.role !== "VIEWER")
 
@@ -100,5 +116,18 @@ watch(
       :mode="props.mode"
       :disabled="!canMutate"
     />
+
+    <template
+      v-if="recordActions.length"
+      #actions
+    >
+      <MRecordActions
+        :actions="recordActions"
+        :record="props.initial"
+        :mode="props.mode"
+        :disabled="!canMutate"
+        @done="emit('refresh')"
+      />
+    </template>
   </MFormDialog>
 </template>

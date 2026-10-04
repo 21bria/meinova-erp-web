@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { BranchTypesRow } from "./types"
 
@@ -32,10 +32,10 @@ export function getBranchTypesColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Is active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("sort_order", "Sort order"),
+      column.status("is_active", resourceLabel("references.organization.branch-types.fields.is_active", "Is active")),
+      column.text("code", resourceLabel("references.organization.branch-types.fields.code", "Code")),
+      column.text("name", resourceLabel("references.organization.branch-types.fields.name", "Name")),
+      column.text("sort_order", resourceLabel("references.organization.branch-types.fields.sort_order", "Sort order")),
     ],
   })
 }

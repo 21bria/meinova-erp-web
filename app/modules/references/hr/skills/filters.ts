@@ -4,6 +4,7 @@ export const skillsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search skills...",
+    placeholderKey: "references.hr.skills.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const skillsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.skills.filters.is_active",
   }),
   ],
 })

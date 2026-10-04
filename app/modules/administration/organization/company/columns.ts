@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { CompanyRow } from "./types"
 
@@ -32,20 +32,20 @@ export function getCompanyColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("parent_name", "Parent Company"),
-      column.text("company_type_name", "Company Type"),
-      column.text("code", "Company Code"),
-      column.text("name", "Company Name"),
-      column.text("legal_name", "Legal Name"),
-      column.text("tax_number", "Tax Number"),
-      column.text("country_name", "Country"),
-      column.text("province_name", "Province"),
-      column.text("city_name", "City"),
-      column.text("postal_code", "Postal code"),
-      column.text("phone", "Phone"),
-      column.text("email", "Email"),
-      column.text("website", "Website"),
+      column.status("is_active", resourceLabel("administration.organization.company.fields.is_active", "Active")),
+      column.text("parent_name", resourceLabel("administration.organization.company.fields.parent", "Parent Company")),
+      column.text("company_type_name", resourceLabel("administration.organization.company.fields.company_type", "Company Type")),
+      column.text("code", resourceLabel("administration.organization.company.fields.code", "Company Code")),
+      column.text("name", resourceLabel("administration.organization.company.fields.name", "Company Name")),
+      column.text("legal_name", resourceLabel("administration.organization.company.fields.legal_name", "Legal Name")),
+      column.text("tax_number", resourceLabel("administration.organization.company.fields.tax_number", "Tax Number")),
+      column.text("country_name", resourceLabel("administration.organization.company.fields.country", "Country")),
+      column.text("province_name", resourceLabel("administration.organization.company.fields.province", "Province")),
+      column.text("city_name", resourceLabel("administration.organization.company.fields.city", "City")),
+      column.text("postal_code", resourceLabel("administration.organization.company.fields.postal_code", "Postal code")),
+      column.text("phone", resourceLabel("administration.organization.company.fields.phone", "Phone")),
+      column.text("email", resourceLabel("administration.organization.company.fields.email", "Email")),
+      column.text("website", resourceLabel("administration.organization.company.fields.website", "Website")),
     ],
   })
 }

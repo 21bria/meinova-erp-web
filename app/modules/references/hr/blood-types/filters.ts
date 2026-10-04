@@ -4,6 +4,7 @@ export const bloodTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search bloodTypes...",
+    placeholderKey: "references.hr.blood-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const bloodTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.blood-types.filters.is_active",
   }),
   ],
 })

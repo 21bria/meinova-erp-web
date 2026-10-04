@@ -16,8 +16,6 @@ export type BranchRow = {
   phone: string
   email: string
   website: string
-  id: string
-  company_name: string
   created_at: string
   updated_at: string
   is_deleted: string

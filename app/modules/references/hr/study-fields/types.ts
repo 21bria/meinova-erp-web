@@ -5,7 +5,6 @@ export type StudyFieldsRow = {
   name: string
   description: string
   sort_order: string
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string

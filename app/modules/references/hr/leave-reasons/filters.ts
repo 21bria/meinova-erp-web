@@ -4,6 +4,7 @@ export const leaveReasonsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search leaveReasons...",
+    placeholderKey: "references.hr.leave-reasons.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const leaveReasonsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.leave-reasons.filters.is_active",
   }),
   ],
 })

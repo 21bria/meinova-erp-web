@@ -4,6 +4,7 @@ export const contractTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search contractTypes...",
+    placeholderKey: "references.hr.contract-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const contractTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.contract-types.filters.is_active",
   }),
   ],
 })

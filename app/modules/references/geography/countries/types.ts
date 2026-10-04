@@ -5,7 +5,6 @@ export type CountriesRow = {
   name: string
   phone_code: string
   currency_code: string
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string

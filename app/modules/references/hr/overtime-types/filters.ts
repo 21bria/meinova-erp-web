@@ -4,6 +4,7 @@ export const overtimeTypesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search overtimeTypes...",
+    placeholderKey: "references.hr.overtime-types.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const overtimeTypesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.overtime-types.filters.is_active",
   }),
   ],
 })

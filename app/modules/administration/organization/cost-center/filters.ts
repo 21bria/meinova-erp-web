@@ -4,6 +4,7 @@ export const costCenterFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search costCenter...",
+    placeholderKey: "administration.organization.cost-center.placeholder.search",
   },
 
   advanced: true,
@@ -11,24 +12,21 @@ export const costCenterFilters = createFilters({
   items: [
   filter.lookup("company", "Company", "/api/administration/organization/lookup/companies/", {
     placement: "quick",
+    labelKey: "administration.organization.cost-center.filters.company",
   }),
-  filter.lookup("site", "Site", "/api/administration/organization/lookup/sites/", {
+  filter.lookup("location", "Location", "/api/administration/organization/lookup/locations/", {
     placement: "quick",
+    labelKey: "administration.organization.cost-center.filters.location",
+    dependsOn: "company",
+    lookupParams: {"company_id":"$company"},
   }),
   filter.select("is_active", "Active", [
     { label: "Active", value: "true" },
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "administration.organization.cost-center.filters.is_active",
   }),
-  filter.lookup("branch", "Branch", null, {
-    placement: "advanced",
-  }),
-  filter.lookup("division", "Division", null, {
-    placement: "advanced",
-  }),
-  filter.lookup("department", "Department", null, {
-    placement: "advanced",
-  }),
+  // Dilewati (lookup tanpa endpoint, dropdown-nya akan selalu kosong): branch, division, department
   ],
 })

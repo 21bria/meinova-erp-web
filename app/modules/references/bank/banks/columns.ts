@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { BanksRow } from "./types"
 
@@ -32,12 +32,12 @@ export function getBanksColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("short_name", "Short Name"),
-      column.text("swift_code", "SWIFT Code"),
-      column.text("country_name", "Country"),
+      column.status("is_active", resourceLabel("references.bank.banks.fields.is_active", "Active")),
+      column.text("code", resourceLabel("references.bank.banks.fields.code", "Code")),
+      column.text("name", resourceLabel("references.bank.banks.fields.name", "Name")),
+      column.text("short_name", resourceLabel("references.bank.banks.fields.short_name", "Short Name")),
+      column.text("swift_code", resourceLabel("references.bank.banks.fields.swift_code", "SWIFT Code")),
+      column.text("country_name", resourceLabel("references.bank.banks.fields.country", "Country")),
     ],
   })
 }

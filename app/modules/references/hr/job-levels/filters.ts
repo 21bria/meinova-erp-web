@@ -4,6 +4,7 @@ export const jobLevelsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search jobLevels...",
+    placeholderKey: "references.hr.job-levels.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const jobLevelsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.job-levels.filters.is_active",
   }),
   ],
 })

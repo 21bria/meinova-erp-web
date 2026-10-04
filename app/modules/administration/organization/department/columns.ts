@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { DepartmentRow } from "./types"
 
@@ -32,17 +32,13 @@ export function getDepartmentColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("company_name", "Company"),
-      column.text("branch_name", "Branch"),
-      column.text("site_name", "Site"),
-      column.text("division_name", "Division"),
-      column.text("code", "Department Code"),
-      column.text("name", "Department Name"),
-      column.text("company_name", "Company name"),
-      column.text("branch_name", "Branch name"),
-      column.text("site_name", "Site name"),
-      column.text("division_name", "Division name"),
+      column.status("is_active", resourceLabel("administration.organization.department.fields.is_active", "Active")),
+      column.text("company_name", resourceLabel("administration.organization.department.fields.company", "Company")),
+      column.text("branch_name", resourceLabel("administration.organization.department.fields.branch", "Branch")),
+      column.text("location_name", resourceLabel("administration.organization.department.fields.location", "Location")),
+      column.text("division_name", resourceLabel("administration.organization.department.fields.division", "Division")),
+      column.text("code", resourceLabel("administration.organization.department.fields.code", "Department Code")),
+      column.text("name", resourceLabel("administration.organization.department.fields.name", "Department Name")),
     ],
   })
 }

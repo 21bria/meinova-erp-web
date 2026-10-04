@@ -2,6 +2,7 @@ import { createForm, field } from "@framework"
 
 export const banksForm = createForm([
   field.text("code", "Code", {
+      "labelKey": "references.bank.banks.fields.code",
       "required": true,
       "placeholder": "e.g. BCA",
       "tab": "general",
@@ -9,6 +10,7 @@ export const banksForm = createForm([
     }),
 
   field.text("name", "Name", {
+      "labelKey": "references.bank.banks.fields.name",
       "required": true,
       "placeholder": "Bank name",
       "tab": "general",
@@ -16,6 +18,7 @@ export const banksForm = createForm([
     }),
 
   field.text("short_name", "Short Name", {
+      "labelKey": "references.bank.banks.fields.short_name",
       "required": true,
       "placeholder": "e.g. BCA",
       "tab": "general",
@@ -23,6 +26,7 @@ export const banksForm = createForm([
     }),
 
   field.text("swift_code", "SWIFT Code", {
+      "labelKey": "references.bank.banks.fields.swift_code",
       "required": true,
       "placeholder": "e.g. CENAIDJA",
       "tab": "general",
@@ -30,6 +34,7 @@ export const banksForm = createForm([
     }),
 
   field.textarea("description", "Description", {
+      "labelKey": "references.bank.banks.fields.description",
       "rows": 4,
       "layout": "full",
       "tab": "general",
@@ -37,6 +42,8 @@ export const banksForm = createForm([
     }),
 
   field.switch("is_active", "Active", {
+      "labelKey": "references.bank.banks.fields.is_active",
+      "default": true,
       "tab": "general",
       "order": 999
     }),

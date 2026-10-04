@@ -3,7 +3,8 @@ import { computed, ref, type Component } from "vue"
 
 import CompanyTypes from "./company-types/page.vue"
 import BranchTypes from "./branch-types/page.vue"
-import Sites from "./site-types/page.vue"
+import LocationTypes from "./location-types/page.vue"
+import FacilityTypes from "./facility-types/page.vue"
 
 type ReferenceItem = {
   value: string
@@ -14,7 +15,8 @@ type ReferenceItem = {
 const items: ReferenceItem[] = [
   { value: "company-type", label: "Company Type", component: CompanyTypes },
   { value: "branch-type", label: "Branch Type", component: BranchTypes },
-  { value: "site-type", label: "Site Type", component: Sites },
+  { value: "location-type", label: "Location Type", component: LocationTypes },
+  { value: "facility-type", label: "Facility Type", component: FacilityTypes },
 ]
 
 const activeTab = ref(items[0]?.value ?? "")

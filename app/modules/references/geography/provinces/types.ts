@@ -3,9 +3,9 @@ export type ProvincesRow = {
   is_active: boolean
   code: string
   name: string
+  aid: string
   country: number | null
   country_name?: string | null
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string
@@ -20,6 +20,7 @@ export type ProvincesPayload = {
   is_active: boolean
   code: string
   name: string
+  aid: string
   country: number | null
   is_deleted: string
   deleted_at: string

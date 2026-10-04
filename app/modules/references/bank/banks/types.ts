@@ -7,7 +7,6 @@ export type BanksRow = {
   swift_code: string
   country: number | null
   country_name?: string | null
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string

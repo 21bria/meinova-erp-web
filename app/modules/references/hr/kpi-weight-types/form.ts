@@ -2,6 +2,7 @@ import { createForm, field } from "@framework"
 
 export const kpiWeightTypesForm = createForm([
   field.text("code", "Code", {
+      "labelKey": "references.hr.kpi-weight-types.fields.code",
       "required": true,
       "placeholder": "e.g. CODE",
       "tab": "general",
@@ -9,6 +10,7 @@ export const kpiWeightTypesForm = createForm([
     }),
 
   field.text("name", "Name", {
+      "labelKey": "references.hr.kpi-weight-types.fields.name",
       "required": true,
       "placeholder": "Name",
       "tab": "general",
@@ -16,17 +18,23 @@ export const kpiWeightTypesForm = createForm([
     }),
 
   field.textarea("description", "Description", {
+      "labelKey": "references.hr.kpi-weight-types.fields.description",
+      "default": "",
       "rows": 4,
       "layout": "full",
       "tab": "general",
       "order": 30
     }),
 
-  field.text("sort_order", "Sort order", {
+  field.number("sort_order", "Sort order", {
+      "labelKey": "references.hr.kpi-weight-types.fields.sort_order",
+      "default": 0,
       "tab": "general"
     }),
 
   field.switch("is_active", "Active", {
+      "labelKey": "references.hr.kpi-weight-types.fields.is_active",
+      "default": true,
       "tab": "general",
       "order": 999
     }),

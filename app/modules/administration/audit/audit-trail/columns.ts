@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { AuditTrailRow } from "./types"
 
@@ -32,15 +32,16 @@ export function getAuditTrailColumns(
     canMutate,
     actions,
     items: [
-      column.text("company_name", "Company"),
-      column.text("site_name", "Site"),
-      column.text("user_name", "User"),
-      column.text("action", "Action"),
-      column.text("module", "Module"),
-      column.text("object_type", "Object Type"),
-      column.text("object_id", "Object ID"),
-      column.text("object_repr", "Object"),
-      column.text("ip_address", "IP Address"),
+      column.text("company_name", resourceLabel("administration.audit.audit-trail.fields.company", "Company")),
+      column.text("location_name", resourceLabel("administration.audit.audit-trail.fields.location", "Location")),
+      column.text("user_name", resourceLabel("administration.audit.audit-trail.fields.user", "User")),
+      column.text("action", resourceLabel("administration.audit.audit-trail.fields.action", "Action")),
+      column.text("module", resourceLabel("administration.audit.audit-trail.fields.module", "Module")),
+      column.text("object_type", resourceLabel("administration.audit.audit-trail.fields.object_type", "Object Type")),
+      column.text("object_id", resourceLabel("administration.audit.audit-trail.fields.object_id", "Object ID")),
+      column.text("object_repr", resourceLabel("administration.audit.audit-trail.fields.object_repr", "Object")),
+      column.text("ip_address", resourceLabel("administration.audit.audit-trail.fields.ip_address", "IP Address")),
+      column.text("created_at", resourceLabel("administration.audit.audit-trail.fields.created_at", "Created At")),
     ],
   })
 }

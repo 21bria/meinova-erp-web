@@ -4,6 +4,7 @@ export const educationsFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search educations...",
+    placeholderKey: "references.hr.educations.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const educationsFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.educations.filters.is_active",
   }),
   ],
 })

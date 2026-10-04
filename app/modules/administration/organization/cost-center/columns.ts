@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { CostCenterRow } from "./types"
 
@@ -32,19 +32,14 @@ export function getCostCenterColumns(
     canMutate,
     actions,
     items: [
-      column.status("is_active", "Active"),
-      column.text("company_name", "Company"),
-      column.text("branch_name", "Branch"),
-      column.text("site_name", "Site"),
-      column.text("division_name", "Division"),
-      column.text("department_name", "Department"),
-      column.text("code", "Cost Center Code"),
-      column.text("name", "Cost Center Name"),
-      column.text("company_name", "Company name"),
-      column.text("branch_name", "Branch name"),
-      column.text("site_name", "Site name"),
-      column.text("division_name", "Division name"),
-      column.text("department_name", "Department name"),
+      column.status("is_active", resourceLabel("administration.organization.cost-center.fields.is_active", "Active")),
+      column.text("company_name", resourceLabel("administration.organization.cost-center.fields.company", "Company")),
+      column.text("branch_name", resourceLabel("administration.organization.cost-center.fields.branch", "Branch")),
+      column.text("location_name", resourceLabel("administration.organization.cost-center.fields.location", "Location")),
+      column.text("division_name", resourceLabel("administration.organization.cost-center.fields.division", "Division")),
+      column.text("department_name", resourceLabel("administration.organization.cost-center.fields.department", "Department")),
+      column.text("code", resourceLabel("administration.organization.cost-center.fields.code", "Cost Center Code")),
+      column.text("name", resourceLabel("administration.organization.cost-center.fields.name", "Cost Center Name")),
     ],
   })
 }

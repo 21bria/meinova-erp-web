@@ -4,6 +4,7 @@ export const trainingCategoryFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search trainingCategory...",
+    placeholderKey: "references.hr.training-category.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const trainingCategoryFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.training-category.filters.is_active",
   }),
   ],
 })

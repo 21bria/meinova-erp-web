@@ -5,17 +5,12 @@ export type DepartmentRow = {
   company_name?: string | null
   branch: number | null
   branch_name?: string | null
-  site: number | null
-  site_name?: string | null
+  location: number | null
+  location_name?: string | null
   division: number | null
   division_name?: string | null
   code: string
   name: string
-  id: string
-  company_name: string
-  branch_name: string
-  site_name: string
-  division_name: string
   created_at: string
   updated_at: string
   is_deleted: string
@@ -30,7 +25,7 @@ export type DepartmentPayload = {
   is_active: boolean
   company: number | null
   branch: number | null
-  site: number | null
+  location: number | null
   division: number | null
   code: string
   name: string

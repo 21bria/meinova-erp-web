@@ -4,6 +4,7 @@ export const jobGradesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search jobGrades...",
+    placeholderKey: "references.hr.job-grades.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const jobGradesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "references.hr.job-grades.filters.is_active",
   }),
   ],
 })
