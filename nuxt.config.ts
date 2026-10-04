@@ -114,6 +114,19 @@ export default defineNuxtConfig({
     },
   },
 
+  /*
+   * Endpoint ikon dinamis milik Nitro dipindah keluar dari `/api`.
+   *
+   * Bawaannya `/api/_nuxt_icon`, dan di produksi seluruh `/api/` diteruskan
+   * Nginx ke Django — permintaan ikon (`:name="item.icon"` yang tidak ikut
+   * dibundel) mendarat di Django dan berakhir 404. Di luar `/api`, ia jatuh
+   * ke `location /` yang memang ke Nuxt. Ini server route Nitro, jadi
+   * `auth.global.ts` (route middleware halaman) tidak menyentuhnya.
+   */
+  icon: {
+    localApiEndpoint: '/_nuxt_icon',
+  },
+
   fonts: {
     defaults: {
       weights: [300, 400, 500, 600, 700, 800],
