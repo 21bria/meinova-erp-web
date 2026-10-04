@@ -6,12 +6,6 @@ import {
   watch,
 } from "vue"
 
-import __Name__Form from "./__Name__Form.vue"
-
-import {
-  __Camel__Form,
-} from "../form"
-
 import type {
   __Name__Row,
 } from "../types"
@@ -25,7 +19,7 @@ const props = withDefaults(
   defineProps<{
     mode: __Name__WorkspaceMode
     record?: __Name__Row | null
-    recordId?: string
+    recordId?: string | number
     tabs?: __Name__WorkspaceTab[]
     activeTab?: string
     loading?: boolean
@@ -47,33 +41,80 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   "update:activeTab": [key: string]
-  "form-change": [payload: Record<string, unknown>]
 }>()
 
-const formModel = ref<Record<string, any>>({})
+/*
+|--------------------------------------------------------------------------
+| Record state
+|--------------------------------------------------------------------------
+*/
 
-watch(
-  () => props.record,
-  (record) => {
-    if (!record) {
-      if (
-        props.mode === "create"
-        && Object.keys(formModel.value).length === 0
-      ) {
-        formModel.value = {}
-      }
+const hasRecord = computed(() => {
+  return (
+    props.recordId !== undefined
+    && props.recordId !== null
+    && props.recordId !== ""
+  )
+})
 
-      return
-    }
+/*
+|--------------------------------------------------------------------------
+| Workspace tabs
+|--------------------------------------------------------------------------
+*/
 
-    formModel.value = {
-      ...record,
-    }
-  },
-  {
-    immediate: true,
-  },
-)
+function isVisible(
+  tab: __Name__WorkspaceTab,
+) {
+  if (!tab?.key)
+    return false
+
+  if (
+    props.mode === "create"
+    && tab.showOnCreate === false
+  ) {
+    return false
+  }
+
+  if (
+    Array.isArray(tab.modes)
+    && tab.modes.length > 0
+    && !tab.modes.includes(props.mode)
+  ) {
+    return false
+  }
+
+  return true
+}
+
+function isDisabled(
+  tab: __Name__WorkspaceTab,
+) {
+  if (tab.disabled)
+    return true
+
+  if (
+    tab.requiresRecord
+    && !hasRecord.value
+  ) {
+    return true
+  }
+
+  return false
+}
+
+/*
+| Kalimat "simpan dulu" untuk tab yang terkunci karena record belum
+| tersimpan. Tab yang dikunci tanpa alasan terbaca seperti tombol rusak.
+*/
+function waitingHint(
+  tab: any,
+): string {
+  if (!tab?.requiresRecord || hasRecord.value)
+    return ""
+
+  return String(tab.hint ?? "")
+}
 
 const validTabs = computed<__Name__WorkspaceTab[]>(() => {
   const source = Array.isArray(props.tabs)
@@ -81,54 +122,74 @@ const validTabs = computed<__Name__WorkspaceTab[]>(() => {
     : []
 
   return source
-    .filter((tab) => {
-      if (!tab?.key)
-        return false
-
-      if (
-        props.mode === "create"
-        && tab.showOnCreate === false
-      ) {
-        return false
-      }
-
-      return true
-    })
+    .filter(isVisible)
     .sort(
-      (a, b) =>
-        Number(a.order ?? 9999)
-        - Number(b.order ?? 9999),
+      (left, right) =>
+        Number(left.order ?? 9999)
+        - Number(right.order ?? 9999),
     )
+})
+
+const waitingHints = computed<string[]>(() => {
+  return [
+    ...new Set(
+      validTabs.value
+        .map(waitingHint)
+        .filter(Boolean),
+    ),
+  ]
 })
 
 const enabledTabs = computed(() => {
   return validTabs.value.filter(
-    tab => !tab.disabled,
+    tab => !isDisabled(tab),
   )
 })
 
 const resolvedActiveTab = computed(() => {
-  const requestedTab = validTabs.value.find(
+  const requested = validTabs.value.find(
     tab =>
       tab.key === props.activeTab
-      && !tab.disabled,
+      && !isDisabled(tab),
   )
 
-  if (requestedTab)
-    return requestedTab.key
+  if (requested)
+    return requested.key
 
   return enabledTabs.value[0]?.key ?? ""
 })
 
+/*
+| Tab yang sudah pernah dibuka tidak dilepas lagi dari DOM — hanya
+| disembunyikan lewat CSS.
+|
+| Bawaan TabsContent melepas isi tab yang tidak aktif, dan itu membuang
+| state lokal komponennya. Yang paling terasa di tabel inline: baris
+| yang baru diketik tapi belum ditekan "Save Rows" lenyap begitu
+| penggunanya menengok tab sebelah untuk memeriksa tanggal — persis
+| hal yang membuatnya pindah tab.
+|
+| Dijaga hanya untuk tab yang PERNAH dibuka, bukan semuanya sekaligus:
+| tiap tab resource menembak satu request daftar saat dipasang, dan
+| memasang semuanya di awal berarti membayar request untuk tab yang
+| mungkin tidak pernah dilihat.
+*/
+const keptTabs = ref<Set<string>>(new Set())
+
 watch(
   resolvedActiveTab,
   (key) => {
-    if (
-      key
-      && key !== props.activeTab
-    ) {
-      emit("update:activeTab", key)
+    if (!key)
+      return
+
+    if (!keptTabs.value.has(key)) {
+      keptTabs.value = new Set(
+        keptTabs.value,
+      ).add(key)
     }
+
+    if (key !== props.activeTab)
+      emit("update:activeTab", key)
   },
   {
     immediate: true,
@@ -143,7 +204,7 @@ function handleTabChange(
   const tab = validTabs.value.find(
     item =>
       item.key === key
-      && !item.disabled,
+      && !isDisabled(item),
   )
 
   if (!tab)
@@ -152,46 +213,25 @@ function handleTabChange(
   emit("update:activeTab", tab.key)
 }
 
-function handleFormChange(
-  payload: Record<string, any>,
-) {
-  formModel.value = {
-    ...formModel.value,
-    ...payload,
-  }
-
-  emit("form-change", {
-    ...formModel.value,
-  })
-}
-
-type __Name__FormMode =
-  | "create"
-  | "edit"
-  | "detail"
-
-const formMode = computed<__Name__FormMode>(() => {
-  if (props.mode === "edit")
-    return "edit"
-
-  if (props.mode === "detail")
-    return "detail"
-
-  return "create"
-})
-
-const formFields = computed(() => {
-  return Array.isArray(__Camel__Form)
-    ? __Camel__Form
-    : []
-})
+/*
+|--------------------------------------------------------------------------
+| Validation errors
+|--------------------------------------------------------------------------
+*/
 
 const fieldTabMap = computed<Record<string, string>>(() => {
   const result: Record<string, string> = {}
 
-  for (const field of formFields.value) {
-    result[field.key] =
-      field.tab ?? "general"
+  for (const tab of validTabs.value) {
+    if (!Array.isArray(tab.fields))
+      continue
+
+    for (const field of tab.fields) {
+      if (!field)
+        continue
+
+      result[String(field)] = tab.key
+    }
   }
 
   return result
@@ -200,10 +240,11 @@ const fieldTabMap = computed<Record<string, string>>(() => {
 const tabErrorCounts = computed<Record<string, number>>(() => {
   const result: Record<string, number> = {}
 
-  for (const key of Object.keys(props.errors ?? {})) {
-    const tabKey =
-      fieldTabMap.value[key]
-      ?? "general"
+  for (const fieldKey of Object.keys(props.errors ?? {})) {
+    const tabKey = fieldTabMap.value[fieldKey]
+
+    if (!tabKey)
+      continue
 
     result[tabKey] =
       (result[tabKey] ?? 0) + 1
@@ -213,10 +254,19 @@ const tabErrorCounts = computed<Record<string, number>>(() => {
 })
 
 function focusField(
-  key: string,
+  fieldKey: string,
 ) {
+  if (!import.meta.client)
+    return
+
+  const escapedKey =
+    typeof CSS !== "undefined"
+    && typeof CSS.escape === "function"
+      ? CSS.escape(fieldKey)
+      : fieldKey
+
   const container = document.querySelector(
-    `[data-field-key="${CSS.escape(key)}"]`,
+    `[data-field-key="${escapedKey}"]`,
   )
 
   if (!(container instanceof HTMLElement))
@@ -231,6 +281,7 @@ function focusField(
     [
       "input",
       "textarea",
+      "select",
       "button",
       "[role='combobox']",
       "[tabindex]:not([tabindex='-1'])",
@@ -254,7 +305,7 @@ watch(
       props.errors ?? {},
     )
 
-    if (!errorKeys.length)
+    if (errorKeys.length === 0)
       return
 
     const firstErrorKey = errorKeys.find(
@@ -288,6 +339,7 @@ watch(
 <template>
   <Card>
     <CardContent class="p-0">
+      <!-- Loading -->
       <div
         v-if="loading"
         class="space-y-4 p-6"
@@ -296,8 +348,9 @@ watch(
         <Skeleton class="h-48 w-full" />
       </div>
 
+      <!-- Empty workspace -->
       <div
-        v-if="!loading && validTabs.length === 0"
+        v-else-if="validTabs.length === 0"
         class="flex min-h-48 items-center justify-center p-6"
       >
         <div class="text-center">
@@ -309,43 +362,83 @@ watch(
             v-if="mode === 'create'"
             class="mt-1 text-xs text-muted-foreground"
           >
-            Form tabs have not been generated yet.
+            Workspace tabs have not been configured yet.
           </p>
         </div>
       </div>
 
+      <!-- Workspace -->
       <Tabs
-        v-if="!loading && validTabs.length > 0"
+        v-else
         :model-value="resolvedActiveTab"
         class="w-full"
         @update:model-value="handleTabChange"
       >
-        <div class="lg:grid lg:min-h-[640px] lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside class="border-b bg-muted/20 lg:border-b-0 lg:border-r">
+        <div
+          class="
+            lg:grid
+            lg:min-h-[640px]
+            lg:grid-cols-[240px_minmax(0,1fr)]
+          "
+        >
+          <!-- Sidebar -->
+          <aside
+            class="
+              border-b bg-muted/20
+              lg:border-b-0 lg:border-r
+            "
+          >
             <div class="p-3 lg:sticky lg:top-0 lg:p-4">
               <TabsList
                 class="
-                  flex h-auto w-full items-center justify-start gap-1
-                  overflow-x-auto bg-transparent p-0
-                  lg:flex-col lg:items-stretch lg:overflow-visible
+                  flex h-auto w-full items-center
+                  justify-start gap-1 overflow-x-auto
+                  bg-transparent p-0
+                  lg:flex-col lg:items-stretch
+                  lg:overflow-visible
                 "
               >
                 <TabsTrigger
                   v-for="tab in validTabs"
                   :key="tab.key"
                   :value="tab.key"
-                  :disabled="tab.disabled"
+                  :disabled="isDisabled(tab)"
+                  :title="waitingHint(tab) || undefined"
+                  :data-save-first="waitingHint(tab) ? tab.key : undefined"
                   class="
-                    h-auto shrink-0 justify-start rounded-md
-                    px-3 py-2.5 text-left font-normal
+                    h-auto shrink-0 justify-start
+                    rounded-md px-3 py-2.5
+                    text-left font-normal
                     data-[state=active]:bg-background
                     data-[state=active]:font-medium
                     data-[state=active]:shadow-sm
                     lg:w-full
                   "
                 >
-                  <span class="whitespace-nowrap">
-                    {{ tab.label }}
+                  <span
+                    class="
+                      flex min-w-0 flex-1
+                      flex-col items-start gap-0.5
+                    "
+                  >
+                    <span class="max-w-full truncate">
+                      {{ tab.label }}
+                    </span>
+
+                    <!--
+                    | Di sidebar desktop kalimatnya tampil di bawah label.
+                    | Di layar sempit tab berderet mendatar, jadi kalimatnya
+                    | lewat `title` dan panel di bawah daftar tab.
+                    -->
+                    <span
+                      v-if="waitingHint(tab)"
+                      class="
+                        hidden whitespace-normal text-xs
+                        text-muted-foreground lg:block
+                      "
+                    >
+                      {{ waitingHint(tab) }}
+                    </span>
                   </span>
 
                   <Badge
@@ -365,64 +458,75 @@ watch(
                   </Badge>
                 </TabsTrigger>
               </TabsList>
+
+              <ul
+                v-if="waitingHints.length"
+                class="mt-2 space-y-1 text-xs text-muted-foreground lg:hidden"
+              >
+                <li
+                  v-for="hint in waitingHints"
+                  :key="hint"
+                >
+                  {{ hint }}
+                </li>
+              </ul>
             </div>
           </aside>
 
+          <!-- Content -->
           <main class="min-w-0 p-4 sm:p-6">
             <TabsContent
               v-for="tab in validTabs"
               :key="tab.key"
               :value="tab.key"
-              class="mt-0 focus-visible:outline-none"
+              :force-mount="
+                keptTabs.has(tab.key)
+                  || undefined
+              "
+              class="
+                mt-0 focus-visible:outline-none
+                data-[state=inactive]:hidden
+              "
             >
+              <!-- Record-required state -->
+              <div
+                v-if="
+                  tab.requiresRecord
+                  && !hasRecord
+                "
+                class="
+                  flex min-h-48 items-center
+                  justify-center rounded-md
+                  border border-dashed
+                "
+              >
+                <div class="text-center">
+                  <p class="text-sm font-medium">
+                    Save the record first
+                  </p>
+
+                  <p class="mt-1 text-sm text-muted-foreground">
+                    {{ waitingHint(tab) || `${tab.label} will be available after this record is saved.` }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Tab content -->
               <slot
+                v-else
                 :name="tab.key"
                 :tab="tab"
                 :mode="mode"
                 :record="record"
                 :record-id="recordId"
+                :readonly="Boolean(tab.readonly)"
               >
-
-             <__Name__Form
-                v-if="
-                  tab.type === 'form'
-                  && mode !== 'list'
-                "
-                :mode="formMode"
-                :tab-key="tab.key"
-                :model-value="formModel"
-                :loading="loading"
-                :errors="errors"
-                @update:model-value="handleFormChange"
-              />
                 <div
-                  v-if="
-                    tab.type !== 'form'
-                    && tab.requiresRecord
-                    && !recordId
+                  class="
+                    flex min-h-48 items-center
+                    justify-center rounded-md
+                    border border-dashed
                   "
-                  class="flex min-h-48 items-center justify-center rounded-md border border-dashed"
-                >
-                  <div class="text-center">
-                    <p class="text-sm font-medium">
-                      Save the record first
-                    </p>
-
-                    <p class="mt-1 text-sm text-muted-foreground">
-                      {{ tab.label }} will be available after this record is saved.
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  v-if="
-                    tab.type !== 'form'
-                    && (
-                      !tab.requiresRecord
-                      || Boolean(recordId)
-                    )
-                  "
-                  class="flex min-h-48 items-center justify-center rounded-md border border-dashed"
                 >
                   <div class="text-center">
                     <p class="text-sm font-medium">
@@ -439,7 +543,6 @@ watch(
           </main>
         </div>
       </Tabs>
-
     </CardContent>
   </Card>
 </template>

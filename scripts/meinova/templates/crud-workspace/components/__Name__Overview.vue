@@ -3,31 +3,46 @@ import type {
   __Name__Row,
 } from "../types"
 
-export type __Name__WorkspaceMode =
-  | "create"
-  | "edit"
-  | "detail"
+import type {
+  __Name__WorkspaceMode,
+} from "../composables/use__Name__Workspace"
+
+export type __Name__OverviewFormat =
+  | "text"
+  | "number"
+  | "date"
+  | "datetime"
+  | "boolean"
 
 export interface __Name__OverviewItem {
   key: string
   label: string
+
   value?: unknown
+  fallback?: string
+  format?: __Name__OverviewFormat
+
   formatter?: (
     value: unknown,
     record: __Name__Row,
   ) => string
+
+  resolve?: (
+    record: __Name__Row,
+  ) => unknown
 }
 
 const props = withDefaults(
   defineProps<{
     mode?: __Name__WorkspaceMode
     record?: __Name__Row | null
-    recordId?: string
+    recordId?: string | number
     items?: __Name__OverviewItem[]
     title?: string
     description?: string
     loading?: boolean
     emptyText?: string
+    showOnCreate?: boolean
   }>(),
   {
     mode: "detail",
@@ -38,6 +53,7 @@ const props = withDefaults(
     description: "General information for this record.",
     loading: false,
     emptyText: "No overview data available.",
+    showOnCreate: false,
   },
 )
 
@@ -45,94 +61,228 @@ type WorkspaceRecord =
   __Name__Row
   & Record<string, unknown>
 
-const isCreateMode = computed(
-  () => props.mode === "create",
-)
+const shouldRender = computed(() => {
+  if (
+    props.mode === "create"
+    && !props.showOnCreate
+  ) {
+    return false
+  }
+
+  return true
+})
+
+function getNestedValue(
+  source: Record<string, unknown>,
+  path: string,
+): unknown {
+  return path
+    .split(".")
+    .filter(Boolean)
+    .reduce<unknown>(
+      (current, key) => {
+        if (
+          !current
+          || typeof current !== "object"
+        ) {
+          return undefined
+        }
+
+        return (
+          current as Record<string, unknown>
+        )[key]
+      },
+      source,
+    )
+}
+
+function formatDate(
+  value: unknown,
+  includeTime = false,
+) {
+  if (
+    value === null
+    || value === undefined
+    || value === ""
+  ) {
+    return null
+  }
+
+  const date = new Date(
+    value as string | number | Date,
+  )
+
+  if (Number.isNaN(date.getTime()))
+    return null
+
+  return new Intl.DateTimeFormat(
+    undefined,
+    includeTime
+      ? {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }
+      : {
+          dateStyle: "medium",
+        },
+  ).format(date)
+}
+
+function formatNumber(
+  value: unknown,
+) {
+  const normalized = Number(value)
+
+  if (!Number.isFinite(normalized))
+    return null
+
+  return new Intl.NumberFormat().format(
+    normalized,
+  )
+}
+
+function formatObject(
+  value: Record<string, unknown>,
+  fallback: string,
+) {
+  return String(
+    value.label
+      ?? value.display_name
+      ?? value.displayName
+      ?? value.name
+      ?? value.code
+      ?? value.id
+      ?? fallback,
+  )
+}
+
+function formatArray(
+  values: unknown[],
+  fallback: string,
+) {
+  if (values.length === 0)
+    return fallback
+
+  return values
+    .map((value) => {
+      if (
+        value
+        && typeof value === "object"
+      ) {
+        return formatObject(
+          value as Record<string, unknown>,
+          fallback,
+        )
+      }
+
+      return String(value)
+    })
+    .join(", ")
+}
+
+function formatValue(
+  value: unknown,
+  item: __Name__OverviewItem,
+) {
+  const fallback =
+    item.fallback ?? "-"
+
+  if (
+    value === null
+    || value === undefined
+    || value === ""
+  ) {
+    return fallback
+  }
+
+  if (item.format === "date") {
+    return formatDate(value) ?? fallback
+  }
+
+  if (item.format === "datetime") {
+    return formatDate(value, true) ?? fallback
+  }
+
+  if (item.format === "number") {
+    return formatNumber(value) ?? fallback
+  }
+
+  if (
+    item.format === "boolean"
+    || typeof value === "boolean"
+  ) {
+    return value
+      ? "Yes"
+      : "No"
+  }
+
+  if (Array.isArray(value)) {
+    return formatArray(
+      value,
+      fallback,
+    )
+  }
+
+  if (
+    typeof value === "object"
+    && value !== null
+  ) {
+    return formatObject(
+      value as Record<string, unknown>,
+      fallback,
+    )
+  }
+
+  return String(value)
+}
 
 function getValue(
   item: __Name__OverviewItem,
 ) {
-  if (!props.record)
-    return "-"
+  const fallback =
+    item.fallback ?? "-"
 
-  const record = props.record as WorkspaceRecord
+  if (!props.record)
+    return fallback
+
+  const record =
+    props.record as WorkspaceRecord
 
   const rawValue =
-    item.value !== undefined
-      ? item.value
-      : record[item.key]
-
-  if (item.formatter)
-    return item.formatter(rawValue, props.record)
-
-  if (
-    rawValue === null
-    || rawValue === undefined
-    || rawValue === ""
-  ) {
-    return "-"
-  }
-
-  if (typeof rawValue === "boolean")
-    return rawValue ? "Yes" : "No"
-
-  if (Array.isArray(rawValue)) {
-    if (!rawValue.length)
-      return "-"
-
-    return rawValue
-      .map((value) => {
-        if (
-          typeof value === "object"
-          && value !== null
-        ) {
-          const itemValue = value as Record<string, unknown>
-
-          return String(
-            itemValue.label
-              ?? itemValue.name
-              ?? itemValue.code
-              ?? itemValue.id
-              ?? "-",
+    typeof item.resolve === "function"
+      ? item.resolve(props.record)
+      : item.value !== undefined
+        ? item.value
+        : getNestedValue(
+            record,
+            item.key,
           )
-        }
 
-        return String(value)
-      })
-      .join(", ")
-  }
-
-  if (
-    typeof rawValue === "object"
-    && rawValue !== null
-  ) {
-    const objectValue = rawValue as Record<
-      string,
-      unknown
-    >
-
-    return String(
-      objectValue.label
-        ?? objectValue.display_name
-        ?? objectValue.name
-        ?? objectValue.code
-        ?? objectValue.id
-        ?? "-",
+  if (item.formatter) {
+    return (
+      item.formatter(
+        rawValue,
+        props.record,
+      )
+      || fallback
     )
   }
 
-  return String(rawValue)
+  return formatValue(
+    rawValue,
+    item,
+  )
 }
 </script>
 
 <template>
-  <Card v-if="!isCreateMode">
+  <Card v-if="shouldRender">
     <CardHeader>
       <CardTitle>
         {{ title }}
       </CardTitle>
 
-      <CardDescription>
+      <CardDescription v-if="description">
         {{ description }}
       </CardDescription>
     </CardHeader>
@@ -153,7 +303,10 @@ function getValue(
       </div>
 
       <div
-        v-else-if="record && items.length"
+        v-else-if="
+          record
+          && items.length > 0
+        "
         class="grid gap-x-8 gap-y-5 md:grid-cols-2 xl:grid-cols-3"
       >
         <div
@@ -181,7 +334,7 @@ function getValue(
           </p>
 
           <p
-            v-if="recordId"
+            v-if="recordId != null"
             class="mt-1 text-xs text-muted-foreground"
           >
             Record ID: {{ recordId }}

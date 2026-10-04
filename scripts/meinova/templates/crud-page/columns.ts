@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns__I18N_IMPORT__ } from "@framework"
 
 import type { __Name__Row } from "./types"
 

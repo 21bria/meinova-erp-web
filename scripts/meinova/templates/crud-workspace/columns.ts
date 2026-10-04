@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns__I18N_IMPORT__ } from "@framework"
 
 import type { __Name__Row } from "./types"
 
@@ -20,8 +20,7 @@ export function get__Name__Columns(
   const role = opts.role ?? "SITE_USER"
 
   const canMutateByRole =
-    role !== "GLOBAL_VIEWER"
-    && role !== "VIEWER"
+   role !== "VIEWER"
 
   const canMutate =
     canMutateByRole

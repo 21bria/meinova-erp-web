@@ -12,3 +12,7 @@ sh scripts/08_geography_master.sh
 sh scripts/09_organization_master.sh
 sh scripts/10_hr_apps.sh
 sh scripts/11_payroll_master.sh
+sh scripts/12_administration.sh
+sh scripts/13_workflow.sh
+sh scripts/14_dashboard.sh
+sh scripts/15_payroll_processing.sh

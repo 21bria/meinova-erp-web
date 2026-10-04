@@ -9,20 +9,29 @@ import {
   Trash2,
 } from "lucide-vue-next"
 
+import {
+  MRecordActions,
+  resourceLabel,
+  translate,
+} from "@framework"
+
+import {
+  __name__RecordActions,
+} from "../actions"
+
 import type {
   __Name__Row,
 } from "../types"
 
-export type __Name__WorkspaceMode =
-  | "create"
-  | "edit"
-  | "detail"
+import type {
+  __Name__WorkspaceMode,
+} from "../composables/use__Name__Workspace"
 
 const props = withDefaults(
   defineProps<{
     mode: __Name__WorkspaceMode
     record?: __Name__Row | null
-    recordId?: string
+    recordId?: string | number
     title?: string
     subtitle?: string
     status?: string
@@ -31,6 +40,11 @@ const props = withDefaults(
     canEdit?: boolean
     canDelete?: boolean
     canSave?: boolean
+    canRefresh?: boolean
+    showSaveAndNew?: boolean
+    showSaveAndClose?: boolean
+    showMoreActions?: boolean
+    showRecordActions?: boolean
   }>(),
   {
     record: null,
@@ -43,6 +57,11 @@ const props = withDefaults(
     canEdit: true,
     canDelete: true,
     canSave: true,
+    canRefresh: true,
+    showSaveAndNew: true,
+    showSaveAndClose: true,
+    showMoreActions: true,
+    showRecordActions: true,
   },
 )
 
@@ -56,6 +75,20 @@ const emit = defineEmits<{
   saveAndClose: []
 }>()
 
+/*
+| Record action dari `schema.actions` — Submit, Approve, Reject, dan
+| tombol khusus modul lain. Daftarnya digenerate ke `actions.ts`; modul
+| yang schema-nya tidak mendeklarasikan apa pun mendapat array kosong
+| dan tidak merender apa-apa.
+|
+| Halaman ini tidak tahu satu pun nama actionnya. Yang menentukan URL,
+| syarat tampil, dan kalimat konfirmasinya adalah schema backend.
+*/
+function handleRecordActionDone(action: any) {
+  if (action?.refresh !== false)
+    emit("refresh")
+}
+
 const isCreateMode = computed(
   () => props.mode === "create",
 )
@@ -68,24 +101,58 @@ const isDetailMode = computed(
   () => props.mode === "detail",
 )
 
+const isFormMode = computed(
+  () =>
+    isCreateMode.value
+    || isEditMode.value,
+)
+
+/*
+ * Judul dan subjudul dirakit dari kolom yang **kebetulan** dimiliki
+ * baris ini — `display_name`, `name`, `code`, `employee_number`. Tidak
+ * ada satu pun yang wajib, dan tiap resource membawa kombinasi berbeda,
+ * jadi membacanya lewat tipe barisnya berarti setiap module yang tidak
+ * punya `code` melaporkan error untuk fallback yang memang sengaja
+ * dituliskan. Satu alias longgar di sini, bukan `as any` bertaburan di
+ * setiap pembacaan.
+ */
+const displayRow = computed<Record<string, any>>(
+  () => (props.record ?? {}) as Record<string, any>,
+)
+
+/*
+| Nama resource di judul. `__TITLE_KEY__` = `<namespace>.title` kalau
+| modulnya digenerate dengan namespace i18n; tanpa itu (atau kunci yang
+| belum ditulis) judulnya tetap nama entitas seperti keluaran lama.
+*/
+const TITLE_KEY = "__TITLE_KEY__"
+
+const entityTitle = computed(() =>
+  TITLE_KEY ? resourceLabel(TITLE_KEY, "__Name__") : "__Name__",
+)
+
 const displayTitle = computed(() => {
   if (props.title)
     return props.title
 
   if (isCreateMode.value)
-    return "Create __Name__"
+    return `${translate("common.actions.create", "Create")} ${entityTitle.value}`
 
-  if (!props.record)
+  if (!props.record) {
     return isEditMode.value
-      ? "Edit __Name__"
-      : "__Name__"
+      ? `${translate("common.actions.edit", "Edit")} ${entityTitle.value}`
+      : entityTitle.value
+  }
 
+  // Dokumen bernomor (`document_number`) dikenali dari nomornya, bukan
+  // dari id internal.
   return String(
-    props.record.display_name
-      ?? props.record.name
-      ?? props.record.code
-      ?? props.record.id
-      ?? "__Name__",
+    displayRow.value.display_name
+      ?? displayRow.value.name
+      ?? displayRow.value.code
+      ?? displayRow.value.document_number
+      ?? displayRow.value.id
+      ?? entityTitle.value,
   )
 })
 
@@ -96,36 +163,74 @@ const displaySubtitle = computed(() => {
   if (isCreateMode.value)
     return "Create a new record"
 
-  if (!props.record)
-    return props.recordId
+  if (!props.record) {
+    return props.recordId != null
       ? `ID: ${props.recordId}`
       : ""
+  }
 
-  const code = props.record.code
+  const code =
+    displayRow.value.code
+    ?? displayRow.value.employee_number
+    ?? null
 
   if (code != null)
     return String(code)
 
-  if (props.record.id != null)
-    return `ID: ${props.record.id}`
+  if (displayRow.value.id != null)
+    return `ID: ${displayRow.value.id}`
+
+  return ""
+})
+
+const displayStatus = computed(() => {
+  if (props.status)
+    return props.status
+
+  if (!props.record)
+    return ""
+
+  const status =
+    displayRow.value.status
+    ?? displayRow.value.employment_status
+    ?? null
+
+  if (status != null)
+    return String(status)
+
+  if ("is_active" in displayRow.value) {
+    return displayRow.value.is_active
+      ? "Active"
+      : "Inactive"
+  }
 
   return ""
 })
 
 const disableActions = computed(
-  () => props.loading || props.saving,
+  () =>
+    props.loading
+    || props.saving,
 )
 
 function handleEdit() {
-  if (!props.record)
+  if (
+    !props.record
+    || !props.canEdit
+  ) {
     return
+  }
 
   emit("edit", props.record)
 }
 
 function handleDelete() {
-  if (!props.record)
+  if (
+    !props.record
+    || !props.canDelete
+  ) {
     return
+  }
 
   emit("delete", props.record)
 }
@@ -133,7 +238,11 @@ function handleDelete() {
 
 <template>
   <div
-    class="flex flex-col gap-4 rounded-lg border bg-background p-5 md:flex-row md:items-center md:justify-between"
+    class="
+      flex flex-col gap-4 rounded-lg
+      border bg-background p-5
+      md:flex-row md:items-center md:justify-between
+    "
   >
     <div class="flex min-w-0 items-start gap-3">
       <Button
@@ -141,6 +250,7 @@ function handleDelete() {
         variant="ghost"
         size="icon"
         class="shrink-0"
+        aria-label="Back"
         @click="emit('back')"
       >
         <ArrowLeft class="size-4" />
@@ -161,10 +271,14 @@ function handleDelete() {
           </h1>
 
           <Badge
-            v-if="status && !isCreateMode"
+            v-if="
+              displayStatus
+              && !isCreateMode
+              && !loading
+            "
             variant="secondary"
           >
-            {{ status }}
+            {{ displayStatus }}
           </Badge>
         </div>
 
@@ -183,8 +297,7 @@ function handleDelete() {
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
-      <!-- Create / Edit actions -->
-      <template v-if="isCreateMode || isEditMode">
+      <template v-if="isFormMode">
         <Button
           v-if="canSave"
           type="button"
@@ -197,7 +310,11 @@ function handleDelete() {
         </Button>
 
         <Button
-          v-if="canSave"
+          v-if="
+            canSave
+            && isCreateMode
+            && showSaveAndNew
+          "
           type="button"
           variant="outline"
           size="sm"
@@ -209,7 +326,10 @@ function handleDelete() {
         </Button>
 
         <Button
-          v-if="canSave"
+          v-if="
+            canSave
+            && showSaveAndClose
+          "
           type="button"
           variant="outline"
           size="sm"
@@ -221,9 +341,9 @@ function handleDelete() {
         </Button>
       </template>
 
-      <!-- Detail actions -->
       <template v-if="isDetailMode">
         <Button
+          v-if="canRefresh"
           type="button"
           variant="outline"
           size="sm"
@@ -259,13 +379,23 @@ function handleDelete() {
         </Button>
       </template>
 
-      <DropdownMenu>
+      <MRecordActions
+        v-if="showRecordActions && !isCreateMode"
+        :actions="__name__RecordActions as any"
+        :record="record as any"
+        :mode="mode"
+        :disabled="disableActions"
+        @done="handleRecordActionDone"
+      />
+
+      <DropdownMenu v-if="showMoreActions">
         <DropdownMenuTrigger as-child>
           <Button
             type="button"
             variant="outline"
             size="icon"
             :disabled="disableActions"
+            aria-label="More actions"
           >
             <MoreHorizontal class="size-4" />
           </Button>
@@ -273,15 +403,20 @@ function handleDelete() {
 
         <DropdownMenuContent align="end">
           <DropdownMenuItem
-            v-if="!isCreateMode"
+            v-if="
+              !isCreateMode
+              && canRefresh
+            "
             @click="emit('refresh')"
           >
+            <RefreshCw class="mr-2 size-4" />
             Refresh
           </DropdownMenuItem>
 
           <DropdownMenuItem
             @click="emit('back')"
           >
+            <ArrowLeft class="mr-2 size-4" />
             Back to list
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -14,6 +14,11 @@ import {
 } from "./columns.mjs"
 
 import {
+  generateCollectionActions,
+  generateRecordActions,
+} from "./actions.mjs"
+
+import {
   generateFilterItems,
 } from "./filters.mjs"
 
@@ -25,6 +30,13 @@ import {
 import {
   generateOverviewItems,
 } from "./overview.mjs"
+
+import {
+  collectedKeys,
+  i18nImport,
+  i18nNamespace,
+  resetCollectedKeys,
+} from "./i18n.mjs"
 
 import {
   generateRowFields,
@@ -82,25 +94,34 @@ function replaceTokens(
   modulePath,
   endpoint,
   schema,
+  namespace = null,
 ) {
   const tableContent = schema
     ? renderTable(names.camel, schema)
     : ""
 
   const formFields = schema
-    ? generateFormFields(schema)
+    ? generateFormFields(schema, namespace)
     : ""
 
   const columnItems = schema
-    ? generateColumnItems(schema)
+    ? generateColumnItems(schema, namespace)
     : ""
 
+  const recordActions = schema
+    ? generateRecordActions(schema, namespace)
+    : "[]"
+
+  const collectionActions = schema
+    ? generateCollectionActions(schema)
+    : "[]"
+
   const filterItems = schema
-    ? generateFilterItems(schema)
+    ? generateFilterItems(schema, namespace)
     : ""
 
   const workspaceTabs = schema
-    ? generateWorkspaceTabs(schema)
+    ? generateWorkspaceTabs(schema, namespace)
     : "[]"
 
   const workspaceDefaultTab = schema
@@ -143,6 +164,11 @@ function replaceTokens(
       /__CRUD_UI__/g,
       generateCrudUi(schema),
     )
+    // Kunci judul resource (`<namespace>.title`), kosong tanpa namespace.
+    .replace(
+      /__TITLE_KEY__/g,
+      namespace ? `${namespace}.title` : "",
+    )
     .replace(
       /__TABLE_CONTENT__/g,
       tableContent,
@@ -154,6 +180,14 @@ function replaceTokens(
     .replace(
       /__COLUMN_ITEMS__/g,
       columnItems,
+    )
+    .replace(
+      /__RECORD_ACTIONS__/g,
+      recordActions,
+    )
+    .replace(
+      /__COLLECTION_ACTIONS__/g,
+      collectionActions,
     )
     .replace(
       /__FILTER_ITEMS__/g,
@@ -187,6 +221,49 @@ function replaceTokens(
       /__DISPLAY_LABEL_DELETE__/g,
       displayLabelDelete,
     )
+    /*
+     * Import `resourceLabel` hanya dipasang kalau memang dipakai.
+     * Tanpa namespace token ini jadi string kosong, dan baris
+     * import-nya kembali persis seperti keluaran lama.
+     */
+    /*
+     * Import hanya dipasang kalau berkasnya benar-benar memanggil
+     * `resourceLabel(`.
+     *
+     * Sejak label form/filter berpindah ke `labelKey` (diresolusi saat
+     * render), dua berkas itu tidak lagi memanggilnya — dan import yang
+     * tidak terpakai di 90-an modul hasil generate adalah derau yang
+     * muncul di tiap review.
+     */
+    /*
+     * Placeholder kotak cari.
+     *
+     * Teks Inggrisnya tetap ditulis apa adanya — itu yang dipakai kalau
+     * kuncinya belum ada di katalog. Yang ditambahkan cuma kuncinya,
+     * supaya "Search company..." tidak jadi satu-satunya teks Inggris
+     * yang tersisa di layar yang seluruh label lainnya sudah berganti.
+     */
+    .replace(
+      /__SEARCH_PLACEHOLDER_KEY__/g,
+      namespace ? `\n    placeholderKey: "${namespace}.placeholder.search",` : "",
+    )
+    .replace(
+      /__I18N_IMPORT__/g,
+      (_match, _offset, whole) =>
+        namespace && /resourceLabel\(/.test(whole) ? ", resourceLabel" : "",
+    )
+    /*
+     * `workspace.ts` tidak punya baris import dari "@framework" sama
+     * sekali — isinya cuma tipe. Jadi import-nya disisipkan utuh, bukan
+     * ditempelkan ke daftar yang sudah ada seperti __I18N_IMPORT__.
+     */
+    .replace(
+      /__I18N_WORKSPACE_IMPORT__\n?/g,
+      (_match, _offset, whole) =>
+        namespace && /resourceLabel\(/.test(whole)
+          ? '\nimport { resourceLabel } from "@framework"\n'
+          : "",
+    )
 }
 
 async function pathExists(
@@ -208,6 +285,7 @@ async function copyTemplateDir(
   moduleImportPath,
   endpoint,
   schema,
+  namespace = null,
 ) {
   const entries = await fs.readdir(
     sourceDir,
@@ -260,6 +338,7 @@ async function copyTemplateDir(
         moduleImportPath,
         endpoint,
         schema,
+        namespace,
       )
 
       continue
@@ -280,6 +359,7 @@ async function copyTemplateDir(
       moduleImportPath,
       endpoint,
       schema,
+      namespace,
     )
 
     await fs.writeFile(
@@ -296,6 +376,7 @@ async function copyTemplateDir(
     )
   }
 }
+
 
 export async function generateCrud(
   name,
@@ -328,6 +409,17 @@ export async function generateCrud(
   const moduleImportPath = pathParts.join("/")
 
   const schema = options.schema ?? null
+
+  /*
+   * Namespace terjemahan modul ini, atau `null`.
+   *
+   * `null` = perilaku lama persis: label dipancarkan sebagai literal
+   * Inggris. Menyalakannya adalah keputusan sadar per modul — lihat
+   * `i18n.mjs`.
+   */
+  const namespace = i18nNamespace(schema, options)
+
+  resetCollectedKeys()
 
   const endpoint =
     options.endpoint
@@ -372,6 +464,33 @@ export async function generateCrud(
     templatePath,
   )
 
+  /*
+   * Template yang tidak punya `actions.ts` akan MEMBUANG action yang
+   * dideklarasikan schema, tanpa satu pun pesan — dan endpoint tanpa
+   * tombol tidak bisa dibedakan dari fitur yang tidak ada. Hari ini
+   * `crud-page` yang belum punya; peringatan ini yang membuat
+   * kelalaiannya terlihat di tempat orang mencarinya, bukan enam bulan
+   * kemudian saat ada yang bertanya kenapa tombolnya tidak muncul.
+   */
+  const declaredActions = Array.isArray(schema?.actions)
+    ? schema.actions.filter(item => item?.endpoint)
+    : []
+
+  if (declaredActions.length) {
+    const hasActionsFile = await pathExists(
+      path.join(templatePath, "actions.ts"),
+    )
+
+    if (!hasActionsFile) {
+      console.warn(
+        `  ! ${declaredActions.length} action dideklarasikan schema tapi `
+        + `template "${templateFolder}" tidak punya actions.ts — `
+        + `tombolnya TIDAK akan dirender: `
+        + declaredActions.map(item => item.key).join(", "),
+      )
+    }
+  }
+
   if (!templateExists) {
     throw new Error(
       `CRUD template not found: ${path.relative(
@@ -395,16 +514,41 @@ export async function generateCrud(
     moduleImportPath,
     endpoint,
     schema,
+    namespace,
   )
 
-  console.log(`
-CRUD generation complete!
+  /*
+   * Kunci yang baru dipancarkan dicetak supaya bisa langsung disalin ke
+   * `app/i18n/locales/<bahasa>/<namespace>.ts`.
+   *
+   * Generator sengaja **tidak** menulis berkas katalognya sendiri:
+   * berkas itu berisi terjemahan yang ditulis orang, dan generator yang
+   * ikut menyentuhnya akan menimpa pekerjaan mereka pada regenerate
+   * berikutnya. Yang dicetak di sini juga tidak wajib diisi — kunci
+   * yang belum ada jatuh ke teks Inggris yang sudah tertanam di
+   * argumen kedua `resourceLabel`.
+   */
+  const keys = collectedKeys()
 
-Module   : ${names.pascal}
-Entity   : ${names.camel}
-Editor   : ${editor}
-Template : ${templateFolder}
-Endpoint : ${endpoint}
-Path     : app/modules/${moduleImportPath}
+  if (keys.length) {
+    console.log(`
+    Kunci terjemahan (${keys.length}) — namespace "${namespace}":
 `)
+
+    for (const item of keys)
+      console.log(`      ${item.key} = ${JSON.stringify(item.label)}`)
+
+    console.log("")
+  }
+
+  console.log(`
+    CRUD generation complete!
+
+    Module   : ${names.pascal}
+    Entity   : ${names.camel}
+    Editor   : ${editor}
+    Template : ${templateFolder}
+    Endpoint : ${endpoint}
+    Path     : app/modules/${moduleImportPath}
+    `)
 }

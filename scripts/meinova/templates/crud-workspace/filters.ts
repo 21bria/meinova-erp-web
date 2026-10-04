@@ -1,9 +1,9 @@
-import { createFilters, filter } from "@framework"
+import { createFilters, filter__I18N_IMPORT__ } from "@framework"
 
 export const __name__Filters = createFilters({
   search: {
     enabled: true,
-    placeholder: "Search __name__...",
+    placeholder: "Search __name__...",__SEARCH_PLACEHOLDER_KEY__
   },
 
   advanced: true,
