@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { SalaryGradesRow } from "./types"
 
@@ -32,11 +32,11 @@ export function getSalaryGradesColumns(
     canMutate,
     actions,
     items: [
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("minimum_salary", "Minimum salary"),
-      column.text("maximum_salary", "Maximum salary"),
-      column.status("is_active", "Is active"),
+      column.text("code", resourceLabel("payroll.salary-grades.fields.code", "Code")),
+      column.text("name", resourceLabel("payroll.salary-grades.fields.name", "Name")),
+      column.text("minimum_salary", resourceLabel("payroll.salary-grades.fields.minimum_salary", "Minimum salary")),
+      column.text("maximum_salary", resourceLabel("payroll.salary-grades.fields.maximum_salary", "Maximum salary")),
+      column.status("is_active", resourceLabel("payroll.salary-grades.fields.is_active", "Is active")),
     ],
   })
 }

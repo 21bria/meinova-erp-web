@@ -8,8 +8,8 @@ export const employeesConfig: CrudConfig = {
   create: true,
   edit: true,
   delete: true,
-  bulk_delete: false,
-  import: false,
-  export: false,
+  bulk_delete: true,
+  import: true,
+  export: true,
 },
 }

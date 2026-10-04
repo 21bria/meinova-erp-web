@@ -5,7 +5,6 @@ export type PayrollGroupsRow = {
   description: string
   pay_frequency: string
   is_active: boolean
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string

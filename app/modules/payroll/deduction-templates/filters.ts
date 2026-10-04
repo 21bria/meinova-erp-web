@@ -4,6 +4,7 @@ export const deductionTemplatesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search deductionTemplates...",
+    placeholderKey: "payroll.deduction-templates.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const deductionTemplatesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "payroll.deduction-templates.filters.is_active",
   }),
   ],
 })

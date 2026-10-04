@@ -3,101 +3,238 @@ import {
   ref,
 } from "vue"
 
-import type {
-  EmployeesRow,
-} from "../types"
+import {
+  normalizeApiErrors,
+} from "@framework"
 
 import {
   employeesConfig,
 } from "../table"
 
-type RecordId =
-  | string
-  | number
+import type {
+  EmployeesPayload,
+  EmployeesRow,
+} from "../types"
+
+interface ApiDetailResponse<T> {
+  success?: boolean
+  message?: string
+  data?: T
+  result?: T
+  item?: T
+}
 
 export function useEmployeesDetail() {
-  const api = useApi()
+  const {
+    request,
+  } = useApi()
 
   const record = ref<EmployeesRow | null>(null)
   const pending = ref(false)
-  const error = ref<unknown>(null)
+  const saving = ref(false)
 
-  const exists = computed(
-    () => record.value !== null,
-  )
+  const errors = ref<
+    Record<string, any> | null
+  >(null)
 
-  function buildDetailEndpoint(
-    id: RecordId,
-  ) {
-    const endpoint =
-      employeesConfig.endpoint.replace(/\/+$/g, "")
+  const validationVersion = ref(0)
 
-    return `${endpoint}/${encodeURIComponent(String(id))}/`
+  const endpoint = computed(() => {
+    return String(
+      employeesConfig.endpoint
+      ?? "/api/hr/employees/",
+    ).replace(/\/+$/, "")
+  })
+
+  function extractRecord(
+    response:
+      | ApiDetailResponse<EmployeesRow>
+      | EmployeesRow
+      | null
+      | undefined,
+  ): EmployeesRow | null {
+    if (!response)
+      return null
+
+    if (
+      typeof response === "object"
+      && "data" in response
+      && response.data
+    ) {
+      return response.data
+    }
+
+    if (
+      typeof response === "object"
+      && "result" in response
+      && response.result
+    ) {
+      return response.result
+    }
+
+    if (
+      typeof response === "object"
+      && "item" in response
+      && response.item
+    ) {
+      return response.item
+    }
+
+    return response as EmployeesRow
   }
 
-  async function fetchDetail(
-    id: RecordId,
+  async function fetchRecord(
+    id: string | number,
   ) {
-    if (
-      id === ""
-      || id === null
-      || id === undefined
-    ) {
-      throw new Error(
-        "Record ID is required to fetch detail.",
-      )
-    }
-
     pending.value = true
-    error.value = null
+    errors.value = null
 
     try {
-      const response = await api<EmployeesRow>(
-        buildDetailEndpoint(id),
+      const response = await request<
+        ApiDetailResponse<EmployeesRow>
+        | EmployeesRow
+      >(
+        `${endpoint.value}/${id}/`,
+        {
+          method: "GET",
+        },
       )
 
-      record.value = response
+      const currentRecord =
+        extractRecord(response)
 
-      return response
+      record.value = currentRecord
+
+      return currentRecord
     }
-    catch (caughtError) {
-      record.value = null
-      error.value = caughtError
+    catch (error) {
+      errors.value =
+        normalizeApiErrors(error)
 
-      throw caughtError
+      record.value = null
+
+      throw error
     }
     finally {
       pending.value = false
     }
   }
 
-  async function refresh(
-    id: RecordId,
+  async function createRecord(
+    payload: EmployeesPayload,
   ) {
-    return await fetchDetail(id)
+    saving.value = true
+    errors.value = null
+
+    try {
+      const response = await request<
+        ApiDetailResponse<EmployeesRow>
+        | EmployeesRow
+      >(
+        `${endpoint.value}/`,
+        {
+          method: "POST",
+          body: payload,
+        },
+      )
+
+      const currentRecord =
+        extractRecord(response)
+
+      record.value = currentRecord
+
+      return currentRecord
+    }
+    catch (error) {
+      errors.value =
+        normalizeApiErrors(error)
+
+      validationVersion.value += 1
+
+      throw error
+    }
+    finally {
+      saving.value = false
+    }
+  }
+
+  async function updateRecord(
+    id: string | number,
+    payload: EmployeesPayload,
+  ) {
+    saving.value = true
+    errors.value = null
+
+    try {
+      const response = await request<
+        ApiDetailResponse<EmployeesRow>
+        | EmployeesRow
+      >(
+        `${endpoint.value}/${id}/`,
+        {
+          method: "PATCH",
+          body: payload,
+        },
+      )
+
+      const currentRecord =
+        extractRecord(response)
+
+      record.value = currentRecord
+
+      return currentRecord
+    }
+    catch (error) {
+      errors.value =
+        normalizeApiErrors(error)
+
+      validationVersion.value += 1
+
+      throw error
+    }
+    finally {
+      saving.value = false
+    }
   }
 
   function setRecord(
     value: EmployeesRow | null,
   ) {
     record.value = value
-    error.value = null
   }
 
   function clearRecord() {
     record.value = null
-    error.value = null
+  }
+
+  function clearErrors() {
+    errors.value = null
+  }
+
+  function reset() {
+    record.value = null
+    pending.value = false
+    saving.value = false
+    errors.value = null
+    validationVersion.value = 0
   }
 
   return {
     record,
     pending,
-    error,
-    exists,
+    saving,
+    errors,
+    validationVersion,
 
-    fetchDetail,
-    refresh,
+    endpoint,
+
+    fetchRecord,
+    createRecord,
+    updateRecord,
+
     setRecord,
     clearRecord,
+    clearErrors,
+    reset,
   }
 }

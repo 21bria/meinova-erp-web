@@ -2,21 +2,26 @@ import { createForm, field } from "@framework"
 
 export const deductionTemplatesForm = createForm([
   field.text("code", "Code", {
+      "labelKey": "payroll.deduction-templates.fields.code",
       "required": true,
       "tab": "general"
     }),
 
   field.text("name", "Name", {
+      "labelKey": "payroll.deduction-templates.fields.name",
       "required": true,
       "tab": "general"
     }),
 
   field.textarea("description", "Description", {
+      "labelKey": "payroll.deduction-templates.fields.description",
       "layout": "full",
       "tab": "general"
     }),
 
   field.switch("is_active", "Is active", {
+      "labelKey": "payroll.deduction-templates.fields.is_active",
+      "default": true,
       "tab": "general"
     }),
 ], {

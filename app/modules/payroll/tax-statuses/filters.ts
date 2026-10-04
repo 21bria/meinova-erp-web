@@ -4,6 +4,7 @@ export const taxStatusesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search taxStatuses...",
+    placeholderKey: "payroll.tax-statuses.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const taxStatusesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "payroll.tax-statuses.filters.is_active",
   }),
   ],
 })

@@ -275,6 +275,12 @@ export const reportsHrPeriodSummarySchema: DashboardSchema = {
           "drilldown": "absent"
         },
         {
+          "key": "business_trip",
+          "label": "Business Trip",
+          "format": "number",
+          "drilldown": "business_trip"
+        },
+        {
           "key": "annual",
           "label": "Annual",
           "format": "number",

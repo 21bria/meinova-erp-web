@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { OvertimeGroupsRow } from "./types"
 
@@ -32,12 +32,12 @@ export function getOvertimeGroupsColumns(
     canMutate,
     actions,
     items: [
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("hourly_multiplier", "Hourly multiplier"),
-      column.text("maximum_hours_per_day", "Maximum hours per day"),
-      column.text("maximum_hours_per_month", "Maximum hours per month"),
-      column.status("is_active", "Is active"),
+      column.text("code", resourceLabel("payroll.overtime-groups.fields.code", "Code")),
+      column.text("name", resourceLabel("payroll.overtime-groups.fields.name", "Name")),
+      column.text("hourly_multiplier", resourceLabel("payroll.overtime-groups.fields.hourly_multiplier", "Default Multiplier")),
+      column.text("hourly_divisor", resourceLabel("payroll.overtime-groups.fields.hourly_divisor", "Hourly Divisor")),
+      column.text("tier_basis_label", resourceLabel("payroll.overtime-groups.fields.tier_basis", "Tier Basis")),
+      column.status("is_active", resourceLabel("payroll.overtime-groups.fields.is_active", "Active")),
     ],
   })
 }

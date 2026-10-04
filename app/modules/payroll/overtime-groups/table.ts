@@ -10,6 +10,6 @@ export const overtimeGroupsConfig: CrudConfig = {
   delete: true,
   bulk_delete: false,
   import: false,
-  export: false,
+  export: true,
 },
 }

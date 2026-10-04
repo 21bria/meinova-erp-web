@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { AllowanceTemplatesRow } from "./types"
 
@@ -32,9 +32,9 @@ export function getAllowanceTemplatesColumns(
     canMutate,
     actions,
     items: [
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.status("is_active", "Is active"),
+      column.text("code", resourceLabel("payroll.allowance-templates.fields.code", "Code")),
+      column.text("name", resourceLabel("payroll.allowance-templates.fields.name", "Name")),
+      column.status("is_active", resourceLabel("payroll.allowance-templates.fields.is_active", "Is active")),
     ],
   })
 }

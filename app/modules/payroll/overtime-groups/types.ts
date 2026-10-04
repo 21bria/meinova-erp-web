@@ -4,10 +4,13 @@ export type OvertimeGroupsRow = {
   name: string
   description: string
   hourly_multiplier: string
+  hourly_divisor: string
   maximum_hours_per_day: string
   maximum_hours_per_month: string
+  tier_basis: string
   is_active: boolean
-  id: string
+  tier_basis_label: string
+  tier_count: string
   created_at: string
   updated_at: string
   is_deleted: string
@@ -23,8 +26,10 @@ export type OvertimeGroupsPayload = {
   name: string
   description: string
   hourly_multiplier: string
+  hourly_divisor: string
   maximum_hours_per_day: string
   maximum_hours_per_month: string
+  tier_basis: string
   is_active: boolean
   is_deleted: string
   deleted_at: string

@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { PayrollGroupsRow } from "./types"
 
@@ -32,10 +32,10 @@ export function getPayrollGroupsColumns(
     canMutate,
     actions,
     items: [
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("pay_frequency", "Pay frequency"),
-      column.status("is_active", "Is active"),
+      column.text("code", resourceLabel("payroll.payroll-groups.fields.code", "Code")),
+      column.text("name", resourceLabel("payroll.payroll-groups.fields.name", "Name")),
+      column.text("pay_frequency", resourceLabel("payroll.payroll-groups.fields.pay_frequency", "Pay frequency")),
+      column.status("is_active", resourceLabel("payroll.payroll-groups.fields.is_active", "Is active")),
     ],
   })
 }

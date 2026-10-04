@@ -8,8 +8,6 @@ export type SalaryLevelsRow = {
   minimum_salary: string
   maximum_salary: string
   is_active: boolean
-  id: string
-  salary_grade_name: string
   created_at: string
   updated_at: string
   is_deleted: string

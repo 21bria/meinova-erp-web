@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { DeductionTemplatesRow } from "./types"
 
@@ -32,9 +32,9 @@ export function getDeductionTemplatesColumns(
     canMutate,
     actions,
     items: [
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.status("is_active", "Is active"),
+      column.text("code", resourceLabel("payroll.deduction-templates.fields.code", "Code")),
+      column.text("name", resourceLabel("payroll.deduction-templates.fields.name", "Name")),
+      column.status("is_active", resourceLabel("payroll.deduction-templates.fields.is_active", "Is active")),
     ],
   })
 }

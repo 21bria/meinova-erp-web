@@ -1,23 +1,57 @@
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, ref } from "vue"
 
 import {
+  MCrudConfirm,
   MCrudDelete,
   MCrudTable,
   useCrud,
+  useCrudBulkDelete,
+  useCrudCollectionActions,
   useCrudDelete,
+  useCrudExport,
 } from "@framework"
 
-import { getEmployeesColumns } from "../columns"
-import { employeesFilters } from "../filters"
-import { employeesConfig } from "../table"
+import {
+  getEmployeesColumns,
+} from "../columns"
+
+import {
+  employeesCollectionActions,
+} from "../actions"
+
+import {
+  employeesFilters,
+} from "../filters"
+
+import {
+  employeesConfig,
+} from "../table"
 
 import type {
   EmployeesRow,
 } from "../types"
 
+const props = withDefaults(
+  defineProps<{
+    autoNavigate?: boolean
+    createPath?: string
+    editPath?: (
+      row: EmployeesRow,
+    ) => string
+  }>(),
+  {
+    autoNavigate: true,
+    createPath: "/hr/employees/create",
+    editPath: undefined,
+  },
+)
+
 const emit = defineEmits<{
   select: [row: EmployeesRow]
+  create: []
+  edit: [row: EmployeesRow]
+  deleted: [row: EmployeesRow | null]
 }>()
 
 const router = useRouter()
@@ -27,21 +61,149 @@ const crud = useCrud<EmployeesRow>({
   name: employeesConfig.id,
 })
 
-const remove = useCrudDelete<EmployeesRow>(crud)
+const remove =
+  useCrudDelete<EmployeesRow>(crud)
 
-function openCreate() {
-  router.push("/hr/employees/create")
+const notify = useNotify()
+
+/*
+|--------------------------------------------------------------------------
+| Import / Export / Bulk delete
+|--------------------------------------------------------------------------
+|
+| Endpoint import bersifat generik per module di backend, jadi bisa
+| diturunkan langsung dari path module ini.
+|
+*/
+
+const selectedIds = ref<string[]>([])
+
+const bulk = useCrudBulkDelete(crud, {
+  entity: "employees",
+  notify,
+})
+
+const exporter = useCrudExport({
+  endpoint: `${employeesConfig.endpoint}export/`,
+  templateEndpoint: "/api/imports/hr/employees/template/",
+  filename: "employees-export.csv",
+  notify,
+  query: () => ({
+    ...crud.serverFilters.value,
+    search: crud.search.value || undefined,
+    ordering: crud.ordering.value || undefined,
+  }),
+})
+
+/*
+| Aksi massal dari schema (Post All dan sejenisnya).
+|
+| `selectedIds` dioper sebagai fungsi, bukan nilai: composable-nya
+| membacanya tepat saat tombolnya ditekan. Kalau dioper apa adanya, yang
+| terbaca adalah daftar centangan saat komponennya dipasang — selalu
+| kosong, jadi setiap penekanan berarti "seluruh baris yang terlihat"
+| walau ada yang dicentang.
+*/
+const collection = useCrudCollectionActions(crud, {
+  actions: employeesCollectionActions,
+  selectedIds: () => selectedIds.value,
+  notify,
+})
+
+function onSelectionChange(
+  value: { ids: string[], rows: any[] },
+) {
+  selectedIds.value = value.ids
 }
 
-function openEdit(row: EmployeesRow) {
+async function openImport() {
+  await router.push("/hr/employees/import")
+}
+
+function askBulkDelete() {
+  bulk.ask(selectedIds.value)
+}
+
+async function confirmBulkDelete() {
+  await bulk.confirm()
+
+  selectedIds.value = []
+}
+
+const deleteTitle = computed(() => {
+  const label =
+    (employeesConfig as Record<string, any>).label
+    ?? (employeesConfig as Record<string, any>).title
+    ?? employeesConfig.id
+    ?? "Employees"
+
+  return `Delete ${String(label)}`
+})
+
+function resolveEditPath(
+  row: EmployeesRow,
+) {
+  if (props.editPath)
+    return props.editPath(row)
+
   if (row.id == null)
+    return null
+
+  return `/hr/employees/${row.id}/edit`
+}
+
+async function openCreate() {
+  emit("create")
+
+  if (!props.autoNavigate)
     return
 
-  router.push(`/hr/employees/${row.id}/edit`)
+  await router.push(
+    props.createPath,
+  )
 }
 
-function selectRow(row: EmployeesRow) {
+async function openEdit(
+  row: EmployeesRow,
+) {
+  emit("edit", row)
+
+  if (!props.autoNavigate)
+    return
+
+  const targetPath =
+    resolveEditPath(row)
+
+  if (!targetPath)
+    return
+
+  await router.push(
+    targetPath,
+  )
+}
+
+async function selectRow(
+  row: EmployeesRow,
+) {
   emit("select", row)
+
+  if (!props.autoNavigate)
+    return
+
+  await openEdit(row)
+}
+
+async function confirmDelete() {
+  const selected =
+    remove.selected.value ?? null
+
+  await remove.confirm()
+
+  emit("deleted", selected)
+}
+
+async function refresh() {
+  await crud.refresh()
 }
 
 const columns = computed(() =>
@@ -55,6 +217,11 @@ const columns = computed(() =>
       : undefined,
   }),
 )
+
+defineExpose({
+  crud,
+  refresh,
+})
 </script>
 
 <template>
@@ -72,6 +239,10 @@ const columns = computed(() =>
       :show-import="crud.ui.value.import"
       :show-export="crud.ui.value.export"
       :show-bulk-delete="crud.ui.value.bulk_delete"
+      :show-template="crud.ui.value.import"
+      :collection-actions="collection.available.value"
+      :selected-count="selectedIds.length"
+      :running-action="collection.running.value"
       @update:search="crud.onSearch"
       @apply-filters="crud.onApply"
       @reset-filters="crud.onReset"
@@ -80,14 +251,39 @@ const columns = computed(() =>
       @change-sorting="crud.onSort"
       @row-click="selectRow"
       @add="openCreate"
+      @import="openImport"
+      @export="exporter.exportData"
+      @template="exporter.downloadTemplate"
+      @bulk-delete="askBulkDelete"
+      @selection-change="onSelectionChange"
+      @collection-action="collection.ask"
     />
 
     <MCrudDelete
       v-if="crud.ui.value.delete"
       v-model:open="remove.open.value"
-      :title="`Delete ${employeesConfig.id}`"
+      :title="deleteTitle"
       description="Are you sure you want to delete this record?"
-      @confirm="remove.confirm"
+      @confirm="confirmDelete"
+    />
+
+    <MCrudDelete
+      v-if="crud.ui.value.bulk_delete"
+      v-model:open="bulk.open.value"
+      :title="`Delete ${bulk.ids.value.length} record(s)`"
+      description="Are you sure you want to delete all selected records?"
+      @confirm="confirmBulkDelete"
+    />
+
+    <MCrudConfirm
+      v-if="collection.available.value.length"
+      v-model:open="collection.open.value"
+      :title="collection.confirmTitle.value"
+      :description="collection.confirmDescription.value"
+      :confirm-label="collection.confirmLabel.value"
+      :variant="collection.confirmVariant.value"
+      :loading="!!collection.running.value"
+      @confirm="collection.confirm"
     />
   </div>
 </template>

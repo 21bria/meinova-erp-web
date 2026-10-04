@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table"
 import type { UserRole } from "@/utils/roles"
-import { column, createColumns } from "@framework"
+import { column, createColumns, resourceLabel } from "@framework"
 
 import type { TaxStatusesRow } from "./types"
 
@@ -32,10 +32,10 @@ export function getTaxStatusesColumns(
     canMutate,
     actions,
     items: [
-      column.text("code", "Code"),
-      column.text("name", "Name"),
-      column.text("non_taxable_income", "Non taxable income"),
-      column.status("is_active", "Is active"),
+      column.text("code", resourceLabel("payroll.tax-statuses.fields.code", "Code")),
+      column.text("name", resourceLabel("payroll.tax-statuses.fields.name", "Name")),
+      column.text("non_taxable_income", resourceLabel("payroll.tax-statuses.fields.non_taxable_income", "Non taxable income")),
+      column.status("is_active", resourceLabel("payroll.tax-statuses.fields.is_active", "Is active")),
     ],
   })
 }

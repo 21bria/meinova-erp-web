@@ -4,6 +4,7 @@ export const salaryGradesFilters = createFilters({
   search: {
     enabled: true,
     placeholder: "Search salaryGrades...",
+    placeholderKey: "payroll.salary-grades.placeholder.search",
   },
 
   advanced: true,
@@ -14,6 +15,7 @@ export const salaryGradesFilters = createFilters({
     { label: "Inactive", value: "false" },
   ], {
     placement: "quick",
+    labelKey: "payroll.salary-grades.filters.is_active",
   }),
   ],
 })

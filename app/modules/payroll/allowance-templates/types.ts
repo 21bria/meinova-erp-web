@@ -4,7 +4,6 @@ export type AllowanceTemplatesRow = {
   name: string
   description: string
   is_active: boolean
-  id: string
   created_at: string
   updated_at: string
   is_deleted: string
